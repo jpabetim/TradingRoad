@@ -1,0 +1,6 @@
+{
+  "name": "TradeRoad",
+  "description": "A web application that displays crypto price charts and uses Gemini AI to perform real-time analysis based on Wyckoff/SMC strategies, visualizing key market elements and potential trade setups.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

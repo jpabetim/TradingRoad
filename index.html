@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analista de Trading IA Wyckoff/SMC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif; /* A nice sans-serif font */
+      background-color: #0f172a; /* slate-900 */
+      color: #f1f5f9; /* slate-100 */
+    }
+    /* Custom scrollbar for better aesthetics */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b; /* slate-800 */
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155; /* slate-700 */
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569; /* slate-600 */
+    }
+    /* Lightweight Charts tooltip override if needed */
+    .tv-lightweight-charts-tooltip-container {
+      background-color: #1e293b !important; /* slate-800 */
+      color: #f1f5f9 !important; /* slate-100 */
+      border: 1px solid #334155 !important; /* slate-700 */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.4.0",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "recharts": "https://esm.sh/recharts@^2.15.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "lightweight-charts": "https://esm.sh/lightweight-charts@^4.2.0",
+    "pako": "https://esm.sh/pako@^2.1.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-900 text-slate-100">
+  <div id="root"></div>
+  <script>
+    // FOR LOCAL DEVELOPMENT ONLY: Set your Gemini API Key here.
+    // WARNING: Do NOT deploy this to a public server with your key embedded.
+    // Replace "TU_CLAVE_API_DE_GEMINI_AQUI" with your actual Google Gemini API Key.
+    // If this key is not set correctly, AI analysis features will not work.
+    window.process = {
+      env: {
+        API_KEY: "TU_CLAVE_API_DE_GEMINI_AQUI" // <-- IMPORTANT: REPLACE THIS VALUE!
+      }
+    };
+  </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
