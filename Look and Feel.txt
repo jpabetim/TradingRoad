@@ -1,0 +1,106 @@
+Libro de Estilos: Trading Road
+1. Introducción
+La identidad visual de Trading Road se basa en la modernidad, el dinamismo y la confianza. El logo simboliza un camino hacia el crecimiento y el éxito en el mundo del trading, combinando elementos tecnológicos y financieros. Este libro de estilos asegura que la marca se presente de manera consistente en todos los medios y plataformas.
+
+2. Logo
+El logo es el principal identificador de la marca. Su uso correcto es fundamental para mantener la integridad de la identidad visual.
+
+2.1. Logo Principal
+Este es el logo completo y preferido. Debe usarse siempre que el espacio y el formato lo permitan.
+
+{
+type: uploaded file
+fileName: TR.jpg
+}
+
+2.2. Variaciones del Logo
+Para garantizar la legibilidad y el impacto en diferentes contextos, se han diseñado las siguientes variaciones:
+
+Isotipo (Icono): Ideal para avatares en redes sociales, favicons o cuando la marca ya es reconocida. Consiste en el monograma "TR" junto con el gráfico de velas y la flecha.
+
+Versión Horizontal: Para situaciones donde el espacio es limitado en altura, como en cabeceras de sitios web o banners. El isotipo se coloca a la izquierda del nombre "TRADING ROAD".
+
+2.3. Área de Seguridad y Tamaño Mínimo
+Área de Seguridad: Para asegurar la visibilidad y el impacto del logo, siempre debe haber un espacio libre a su alrededor. Este espacio debe ser, como mínimo, equivalente a la altura de la letra "T" del monograma.
+
+Tamaño Mínimo: Para garantizar la legibilidad, el logo completo no debe reproducirse en un ancho inferior a 60 píxeles en digital o 2 cm en impresión.
+
+2.4. Usos Incorrectos
+Es crucial no alterar el logo de ninguna manera. A continuación se muestran ejemplos de usos incorrectos:
+
+No cambiar los colores del logo.
+
+No distorsionar ni estirar el logo.
+
+No añadir efectos como sombras, biseles o brillos no autorizados.
+
+No rotar el logo.
+
+No colocar el logo sobre fondos complejos que dificulten su legibilidad. Utilizar las versiones en negativo (blanco) si es necesario.
+
+3. Paleta de Colores
+La paleta de colores de Trading Road es vibrante y tecnológica, evocando energía, profesionalismo e innovación.
+
+3.1. Colores Primarios
+Son los colores principales del logo y deben dominar en la comunicación visual.
+
+Azul Oscuro (Fondo): #101124 - Representa la profesionalidad, la profundidad del mercado y la noche.
+
+Cian Eléctrico: #33D4FF - Simboliza la tecnología, la energía y la claridad.
+
+Naranja Vibrante: #FF8A00 - Aporta dinamismo, optimismo y acción.
+
+Púrpura Neón: #8E4FFF - Sugiere innovación, calidad y visión de futuro.
+
+3.2. Colores Secundarios
+Estos colores, extraídos de las velas del gráfico, se utilizan como acentos para resaltar información, botones de llamada a la acción (CTAs) o elementos gráficos.
+
+Rosa Neón: #FF4DC8
+
+Azul Cielo: #4D9AFF
+
+3.3. Colores Neutros
+Se utilizan para textos, fondos y para equilibrar los colores más vibrantes.
+
+Blanco Puro: #FFFFFF
+
+Gris Claro: #F5F5F5
+
+Gris Medio: #A0A0A0
+
+4. Tipografía
+La tipografía refuerza la personalidad moderna y legible de la marca. Se ha seleccionado una familia tipográfica versátil y de fácil acceso (Google Fonts).
+
+4.1. Tipografía Primaria (Titulares)
+Montserrat
+Esta fuente sans-serif, geométrica y audaz, se utiliza para todos los titulares (H1, H2, H3) y para el texto del logo "TRADING ROAD". Su claridad y peso la hacen perfecta para mensajes importantes.
+
+Uso: Montserrat Bold (700) para titulares principales.
+
+Estilo: MAYÚSCULAS para mayor impacto.
+
+EJEMPLO DE TITULAR (H1 - MONTSERRAT BOLD)
+Ejemplo de Subtítulo (H2 - Montserrat SemiBold)
+4.2. Tipografía Secundaria (Cuerpo de Texto)
+Roboto
+Para párrafos y textos largos, se utilizará Roboto. Es una fuente sans-serif muy legible en pantalla y que combina perfectamente con la fuerza de Montserrat, ofreciendo una experiencia de lectura cómoda.
+
+Uso: Roboto Regular (400) para cuerpo de texto.
+
+Estilo: Roboto Italic para énfasis y Roboto Bold para resaltar palabras clave.
+
+Ejemplo de cuerpo de texto:
+Trading Road te guía en el camino hacia la consistencia y el éxito en los mercados financieros. Nuestra metodología combina tecnología de vanguardia con análisis de expertos para ofrecerte las mejores herramientas y formación.
+
+5. Estilo de Iconografía e Imágenes
+5.1. Iconos
+Los iconos deben ser de estilo "outline" (contorno), con líneas limpias y formas geométricas simples. Esto mantiene la coherencia con la estética moderna y tecnológica del logo.
+
+5.2. Fotografía
+El estilo fotográfico debe reflejar los valores de la marca:
+
+Temas: Gráficos financieros abstractos, tecnología, entornos urbanos nocturnos con luces de neón, personas en entornos de trabajo modernos (sin mostrar rostros para un enfoque más global), y metáforas visuales de caminos y crecimiento.
+
+Estética: Imágenes de alta calidad, con colores vibrantes que se alineen con la paleta de la marca (azules, púrpuras, naranjas). Se pueden usar efectos de luz como lens flares o light trails para añadir dinamismo.
+
+Tono: Profesional, inspirador y enfocado en el futuro.

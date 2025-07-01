@@ -1,0 +1,390 @@
+/* Estilos adicionales para la interfaz mejorada del análisis */
+
+/* Buscador de símbolos */
+.symbol-search-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.symbol-input {
+    width: calc(100% - 40px);
+    padding: 8px;
+    background-color: var(--input-bg, #1e222d);
+    color: var(--text-primary, #f8f8f8);
+    border: 1px solid var(--border-color, #2a2e39);
+    border-radius: 4px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.favorite-button {
+    width: 36px;
+    height: 36px;
+    margin-left: 4px;
+    background-color: var(--btn-bg, #2a2e39);
+    color: var(--text-primary, #f8f8f8);
+    border: 1px solid var(--border-color, #2a2e39);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.favorite-button:hover {
+    background-color: var(--btn-hover, #374151);
+}
+
+.favorite-button i {
+    color: #777;
+    font-size: 14px;
+}
+
+.favorite-button i.active {
+    color: #ffd700;
+}
+
+.symbol-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.symbol-result-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.symbol-result-item:hover {
+    background-color: var(--btn-hover);
+}
+
+.symbol-result-item .symbol-name {
+    color: var(--text-primary);
+}
+
+.favorite-symbols {
+    margin-top: 10px;
+}
+
+.favorite-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.favorite-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.favorite-item {
+    padding: 4px 8px;
+    background-color: var(--btn-bg);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.favorite-item:hover {
+    background-color: var(--btn-hover);
+}
+
+.favorite-remove {
+    margin-left: 5px;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+.symbol-result-item .symbol-exchange {
+    color: var(--text-secondary);
+    font-size: 0.8em;
+}
+
+.favorite-toggle {
+    color: #888;
+    cursor: pointer;
+}
+
+.favorite-toggle.active {
+    color: gold;
+}
+
+/* Favoritos */
+.favorite-symbols {
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.favorite-header {
+    padding: 8px 12px;
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    font-weight: bold;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.favorite-list {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.favorite-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.favorite-item:hover {
+    background-color: var(--btn-hover);
+}
+
+.favorite-item .favorite-remove {
+    color: #888;
+    cursor: pointer;
+}
+
+.favorite-item .favorite-remove:hover {
+    color: #ff4b4b;
+}
+
+/* Estilos de acordeón para indicadores */
+.indicators-accordion {
+    width: 100%;
+}
+
+.indicator-accordion-item {
+    border: 1px solid var(--border-color);
+    margin-bottom: 5px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.indicator-header {
+    padding: 10px;
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.indicator-header:hover {
+    background-color: var(--btn-hover);
+}
+
+.indicator-content {
+    padding: 10px;
+    background-color: var(--bg-primary);
+    display: none;
+}
+
+.indicator-content.active {
+    display: block;
+}
+
+.indicator-params {
+    margin-bottom: 10px;
+}
+
+.indicator-params label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+}
+
+.indicator-params input {
+    width: 100%;
+    padding: 6px;
+    background-color: var(--btn-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+
+/* Grupos de estilos para indicadores */
+.ma-type-group,
+.ma-period-group,
+.ma-color-group,
+.ma-width-group,
+.ma-opacity-group,
+.rsi-param-group,
+.rsi-levels-group,
+.rsi-style-group,
+.rsi-toggle-group,
+.volume-toggle-group,
+.volume-style-group,
+.volume-ma-style-group {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.style-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.indicator-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.indicator-actions button {
+    flex-grow: 1;
+    margin: 0 5px;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.apply-indicator {
+    background-color: var(--highlight-color);
+    color: white;
+}
+
+.remove-indicator {
+    background-color: #ff4b4b;
+    color: white;
+}
+
+/* Botón de tema */
+#toggleTheme {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#toggleTheme:hover {
+    background-color: var(--btn-hover);
+}
+
+/* Estilos para las medias móviles activas */
+#active-averages {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.ma-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ma-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 5px;
+    background-color: var(--btn-bg);
+    border-radius: 3px;
+}
+
+.ma-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.ma-info {
+    flex-grow: 1;
+    font-size: 12px;
+}
+
+.ma-remove {
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.ma-remove:hover {
+    color: #ff4b4b;
+}
+
+.toggle-indicator {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* Estilos para modo claro/oscuro */
+:root {
+    --bg-primary: #131722;
+    --bg-secondary: #1e222d;
+    --text-primary: #d9d9d9;
+    --text-secondary: #758696;
+    --border-color: #2a2e39;
+    --accent: #9B7DFF;
+    --btn-bg: #2a2e39;
+    --btn-hover: #363c4e;
+    --highlight-color: #2196F3;
+}
+
+body.light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f0f0;
+    --text-primary: #131722;
+    --text-secondary: #5d6067;
+    --border-color: #dde1e6;
+    --accent: #2962ff;
+    --btn-bg: #e0e3eb;
+    --btn-hover: #d0d3db;
+    --highlight-color: #2196F3;
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingRoad - Análisis Financiero</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/trading_analysis.css">
+    <link rel="stylesheet" href="/static/css/global-assistant.css">
+    <link rel="icon" type="image/png" href="/static/img/logo.png">
+</head>
+<body {% if request.path == '/analysis' %}class="analysis-page"{% endif %}>
+    <header>
+        <div class="logo-container">
+            <a href="/">
+                <img src="/static/img/logo.png" alt="TradingRoad Logo">
+                {% if request.path != '/analysis' %}
+                <span class="logo-text">TradingRoad</span>
+                {% endif %}
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a></li>
+                <li><a href="/analysis" class="{{ 'active' if request.path == '/analysis' else '' }}">Análisis</a></li>
+                <li><a href="/trading" class="{{ 'active' if request.path == '/trading' else '' }}">Trading</a></li>
+                <li><a href="/volatility" class="{{ 'active' if request.path == '/volatility' else '' }}">Vencimientos</a></li>
+                <li><a href="/news" class="{{ 'active' if request.path == '/news' else '' }}">Noticias</a></li>
+                <li><a href="/calendar" class="{{ 'active' if request.path == '/calendar' else '' }}">Calendario</a></li>
+                <li><a href="/config" class="{{ 'active' if request.path == '/config' else '' }}">Configuración</a></li>
+            </ul>
+        </nav>
+        <div class="user-menu">
+            {% if session.user %}
+                <span>{{ session.user }}</span>
+                <a href="/logout" class="logout-btn">Cerrar sesión</a>
+            {% else %}
+                <a href="/login" class="login-btn">Iniciar sesión</a>
+            {% endif %}
+        </div>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer {% if request.path == '/analysis' %}class="analysis-footer"{% endif %}>
+        <p>&copy; 2025 TradingRoad - Plataforma de Análisis Financiero</p>
+    </footer>
+
+    <!-- Asistente Global de IA (TraderAlpha) -->
+    <div id="traderalpha-fab" class="chat-fab">
+        <span class="fab-text">IA</span>
+    </div>
+
+    <div id="traderalpha-modal" class="chat-modal hidden">
+        <div class="chat-modal-content">
+            <div class="chat-header">
+                <h3>TraderAlpha</h3>
+                <button id="traderalpha-close" class="chat-close">&times;</button>
+            </div>
+            <div id="traderalpha-messages" class="chat-messages">
+                <!-- Los mensajes se añaden dinámicamente -->
+            </div>
+            <div class="chat-input-area">
+                <form id="traderalpha-form">
+                    <textarea id="traderalpha-input" placeholder="Pregunta sobre trading, volatilidad, opciones..." rows="1"></textarea>
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript base -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/news-loader.js"></script>
+    {% block scripts %}{% endblock %}
+    <script src="/static/js/global-assistant.js"></script>
+</body>
+</html>

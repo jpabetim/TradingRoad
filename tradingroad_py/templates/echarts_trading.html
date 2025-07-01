@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tealstreet_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/echarts-trading.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Hide header for full-screen trading experience */
+    header {
+        display: none;
+    }
+    
+    body {
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Full height trading container */
+    .echarts-trading-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background-color: var(--primary-bg);
+    }
+    
+    /* Trading Chart Container */
+    #echartsContainer {
+        flex: 1;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="echarts-trading-container">
+    <!-- Top Navigation Bar (TealStreet style) -->
+    <div class="top-navigation-bar">
+        <div class="left-controls">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/tradingroad-logo.png') }}" alt="TradingRoad" class="logo-img">
+            </div>
+            <div class="market-selector">
+                <select id="dataSource" class="source-select">
+                    <option value="binance">B</option>
+                    <option value="coinbase">C</option>
+                    <option value="kraken">K</option>
+                    <option value="bybit" selected>BY</option>
+                </select>
+                <div class="symbol-search-wrapper">
+                    <input type="text" id="symbolSearch" class="symbol-input" placeholder="BTCUSDT" autocomplete="off">
+                    <div class="usdt-label">USDT</div>
+                    <button class="dropdown-button"><i class="fas fa-caret-down"></i></button>
+                </div>
+            </div>
+            <div class="timeframe-buttons">
+                <button class="tf-button" data-timeframe="1m">1m</button>
+                <button class="tf-button" data-timeframe="5m">5m</button>
+                <button class="tf-button" data-timeframe="15m">15m</button>
+                <button class="tf-button" data-timeframe="30m">30m</button>
+                <button class="tf-button active" data-timeframe="1h">1h</button>
+                <button class="tf-button" data-timeframe="4h">4h</button>
+                <button class="tf-button" data-timeframe="1d">1D</button>
+            </div>
+            <button id="indicatorsBtn" class="icon-button"><i class="fas fa-chart-line"></i></button>
+        </div>
+        <div class="right-controls">
+            <button id="fullscreenBtn" class="icon-button"><i class="fas fa-expand"></i></button>
+            <button id="settingsBtn" class="icon-button"><i class="fas fa-cog"></i></button>
+            <button id="aiAssistantBtn" class="icon-button purple"><i class="fas fa-robot"></i></button>
+        </div>
+    </div>
+    
+    <!-- Symbol Info Bar -->
+    <div class="symbol-info-bar">
+        <div class="symbol-info-group">
+            <div class="symbol-name" id="symbolName">BTCUSDT</div>
+            <div class="timeframe-display" id="timeframeDisplay">1h</div>
+        </div>
+        <div class="price-info-group">
+            <div class="price-label">O <span id="openPrice">---.--</span></div>
+            <div class="price-label">H <span id="highPrice">---.--</span></div>
+            <div class="price-label">L <span id="lowPrice">---.--</span></div>
+            <div class="price-label">C <span id="closePrice">---.--</span></div>
+            <div class="price-change" id="priceChange">---.--% (---.--)</div>
+            <div class="volume-info">Vol: <span class="volume-value" id="volumeValue">---.--</span></div>
+            <div class="countdown-container">
+                <div class="countdown-timer" id="countdownTimer">--:--</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Chart Container -->
+    <div id="echartsContainer"></div>
+    
+    <!-- Indicators Modal -->
+    <div class="indicators-modal" id="indicatorsModal">
+        <div class="indicators-modal-header">
+            <h3>Indicadores Técnicos</h3>
+            <button class="modal-close" id="closeIndicatorsModal">&times;</button>
+        </div>
+        <div class="indicators-modal-content">
+            <div class="indicators-tabs">
+                <button class="indicator-tab active" data-tab="oscillators">Osciladores</button>
+                <button class="indicator-tab" data-tab="trend">Tendencia</button>
+                <button class="indicator-tab" data-tab="volatility">Volatilidad</button>
+                <button class="indicator-tab" data-tab="volume">Volumen</button>
+            </div>
+            
+            <div class="indicator-tab-content active" id="oscillators-tab">
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">RSI</div>
+                        <button class="indicator-toggle" data-indicator="rsi">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Período</div>
+                            <input type="number" class="param-input" id="rsiPeriod" value="14" min="1" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Sobrecompra</div>
+                            <input type="number" class="param-input" id="rsiOverbought" value="70" min="50" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Sobreventa</div>
+                            <input type="number" class="param-input" id="rsiOversold" value="30" min="0" max="50">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">Estocástico</div>
+                        <button class="indicator-toggle" data-indicator="stochastic">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">K Período</div>
+                            <input type="number" class="param-input" id="stochKPeriod" value="14" min="1" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">D Período</div>
+                            <input type="number" class="param-input" id="stochDPeriod" value="3" min="1" max="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">MACD</div>
+                        <button class="indicator-toggle" data-indicator="macd">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Rápido</div>
+                            <input type="number" class="param-input" id="macdFast" value="12" min="1" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Lento</div>
+                            <input type="number" class="param-input" id="macdSlow" value="26" min="1" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Señal</div>
+                            <input type="number" class="param-input" id="macdSignal" value="9" min="1" max="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="indicator-tab-content" id="trend-tab">
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">Medias Móviles</div>
+                        <button class="indicator-toggle" data-indicator="ma">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Tipo</div>
+                            <select class="param-input" id="maType">
+                                <option value="sma">SMA</option>
+                                <option value="ema">EMA</option>
+                                <option value="wma">WMA</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Período</div>
+                            <input type="number" class="param-input" id="maPeriod" value="20" min="1" max="500">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Color</div>
+                            <input type="color" class="param-input" id="maColor" value="#3D85C6">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">Parabolic SAR</div>
+                        <button class="indicator-toggle" data-indicator="sar">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Aceleración</div>
+                            <input type="number" class="param-input" id="sarAcceleration" value="0.02" min="0.01" max="0.1" step="0.01">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Máximo</div>
+                            <input type="number" class="param-input" id="sarMaximum" value="0.2" min="0.1" max="1" step="0.1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="indicator-tab-content" id="volatility-tab">
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">Bollinger Bands</div>
+                        <button class="indicator-toggle" data-indicator="bb">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Período</div>
+                            <input type="number" class="param-input" id="bbPeriod" value="20" min="1" max="100">
+                        </div>
+                        <div class="param-group">
+                            <div class="param-label">Desviación</div>
+                            <input type="number" class="param-input" id="bbDeviation" value="2" min="1" max="5" step="0.1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">ATR</div>
+                        <button class="indicator-toggle" data-indicator="atr">Añadir</button>
+                    </div>
+                    <div class="indicator-params">
+                        <div class="param-group">
+                            <div class="param-label">Período</div>
+                            <input type="number" class="param-input" id="atrPeriod" value="14" min="1" max="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="indicator-tab-content" id="volume-tab">
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">OBV</div>
+                        <button class="indicator-toggle" data-indicator="obv">Añadir</button>
+                    </div>
+                </div>
+                
+                <div class="indicator-group">
+                    <div class="indicator-group-header">
+                        <div class="indicator-name">VWAP</div>
+                        <button class="indicator-toggle" data-indicator="vwap">Añadir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalOverlay"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="{{ url_for('static', filename='js/echarts-trading-chart.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize ECharts Trading Chart
+    initEChartsTradingChart({
+        container: 'echartsContainer',
+        symbol: 'BTCUSDT',
+        timeframe: '1h',
+        dataSource: 'bybit',
+        theme: 'dark'
+    });
+    
+    // Initialize indicators modal
+    const indicatorsBtn = document.getElementById('indicatorsBtn');
+    const indicatorsModal = document.getElementById('indicatorsModal');
+    const closeIndicatorsModal = document.getElementById('closeIndicatorsModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    
+    indicatorsBtn.addEventListener('click', function() {
+        indicatorsModal.style.display = 'block';
+        modalOverlay.style.display = 'block';
+    });
+    
+    closeIndicatorsModal.addEventListener('click', function() {
+        indicatorsModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+    });
+    
+    modalOverlay.addEventListener('click', function() {
+        indicatorsModal.style.display = 'none';
+        modalOverlay.style.display = 'none';
+    });
+    
+    // Indicator tabs
+    document.querySelectorAll('.indicator-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            document.querySelectorAll('.indicator-tab').forEach(t => {
+                t.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Hide all tab content
+            document.querySelectorAll('.indicator-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+    
+    // Indicator toggle buttons
+    document.querySelectorAll('.indicator-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const indicator = this.getAttribute('data-indicator');
+            
+            if (this.classList.contains('active')) {
+                // Remove indicator
+                this.classList.remove('active');
+                this.textContent = 'Añadir';
+                
+                // TODO: Remove indicator from chart
+                console.log(`Removing indicator: ${indicator}`);
+                
+            } else {
+                // Add indicator
+                this.classList.add('active');
+                this.textContent = 'Quitar';
+                
+                // Get parameters for this indicator
+                let params = {};
+                
+                switch(indicator) {
+                    case 'rsi':
+                        params = {
+                            period: parseInt(document.getElementById('rsiPeriod').value),
+                            overbought: parseInt(document.getElementById('rsiOverbought').value),
+                            oversold: parseInt(document.getElementById('rsiOversold').value)
+                        };
+                        break;
+                        
+                    case 'macd':
+                        params = {
+                            fast: parseInt(document.getElementById('macdFast').value),
+                            slow: parseInt(document.getElementById('macdSlow').value),
+                            signal: parseInt(document.getElementById('macdSignal').value)
+                        };
+                        break;
+                        
+                    case 'bb':
+                        params = {
+                            period: parseInt(document.getElementById('bbPeriod').value),
+                            deviation: parseFloat(document.getElementById('bbDeviation').value)
+                        };
+                        break;
+                        
+                    case 'ma':
+                        params = {
+                            type: document.getElementById('maType').value,
+                            period: parseInt(document.getElementById('maPeriod').value),
+                            color: document.getElementById('maColor').value
+                        };
+                        break;
+                        
+                    // Add more indicators as needed
+                }
+                
+                // TODO: Add indicator to chart
+                console.log(`Adding indicator: ${indicator}`, params);
+                
+                if (window.tradingChart) {
+                    // Example: Call the appropriate method on the chart
+                    if (indicator === 'rsi') {
+                        window.tradingChart.addIndicatorChart('RSI', 'rsi');
+                    } else if (indicator === 'macd') {
+                        window.tradingChart.addIndicatorChart('MACD', 'macd');
+                    } else if (indicator === 'bb') {
+                        window.tradingChart.addBollingerBands(params.period, params.deviation);
+                    }
+                }
+            }
+        });
+    });
+    
+    // Update symbol info
+    function updateSymbolInfo(data) {
+        if (!data || !data.last) return;
+        
+        document.getElementById('symbolName').textContent = window.tradingChart.symbol;
+        document.getElementById('timeframeDisplay').textContent = window.tradingChart.timeframe;
+        document.getElementById('openPrice').textContent = data.open.toFixed(2);
+        document.getElementById('highPrice').textContent = data.high.toFixed(2);
+        document.getElementById('lowPrice').textContent = data.low.toFixed(2);
+        document.getElementById('closePrice').textContent = data.last.toFixed(2);
+        
+        const change = data.last - data.open;
+        const changePercent = (change / data.open) * 100;
+        
+        const priceChangeEl = document.getElementById('priceChange');
+        priceChangeEl.textContent = `${changePercent.toFixed(2)}% (${change.toFixed(2)})`;
+        priceChangeEl.classList.remove('positive', 'negative');
+        priceChangeEl.classList.add(change >= 0 ? 'positive' : 'negative');
+        
+        document.getElementById('volumeValue').textContent = formatVolume(data.volume);
+    }
+    
+    function formatVolume(volume) {
+        if (volume >= 1000000000) {
+            return (volume / 1000000000).toFixed(2) + 'B';
+        } else if (volume >= 1000000) {
+            return (volume / 1000000).toFixed(2) + 'M';
+        } else if (volume >= 1000) {
+            return (volume / 1000).toFixed(2) + 'K';
+        } else {
+            return volume.toFixed(2);
+        }
+    }
+    
+    // Setup timeframe buttons
+    document.querySelectorAll('.tf-button').forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class
+            document.querySelectorAll('.tf-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class
+            this.classList.add('active');
+            
+            const timeframe = this.getAttribute('data-timeframe');
+            if (window.tradingChart) {
+                window.tradingChart.timeframe = timeframe;
+                window.tradingChart.loadData();
+                document.getElementById('timeframeDisplay').textContent = timeframe;
+            }
+        });
+    });
+    
+    // Handle symbol search
+    document.getElementById('symbolSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const symbol = this.value.trim().toUpperCase() + 'USDT';
+            if (window.tradingChart) {
+                window.tradingChart.symbol = symbol;
+                window.tradingChart.loadData();
+                document.getElementById('symbolName').textContent = symbol;
+            }
+        }
+    });
+    
+    // Handle exchange change
+    document.getElementById('dataSource').addEventListener('change', function() {
+        if (window.tradingChart) {
+            window.tradingChart.dataSource = this.value;
+            window.tradingChart.loadData();
+        }
+    });
+    
+    // Fullscreen button
+    document.getElementById('fullscreenBtn').addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

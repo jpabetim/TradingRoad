@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chart - TradingRoad</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0C111C;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #testChart {
+            width: 800px;
+            height: 400px;
+            border: 1px solid #2A2E39;
+            margin: 20px 0;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #2962FF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Chart - TradingRoad</h1>
+    
+    <div class="status" id="status">Cargando...</div>
+    
+    <button class="btn" onclick="testBasicChart()">Test Basic Chart</button>
+    <button class="btn" onclick="testRealData()">Test Real Data</button>
+    <button class="btn" onclick="clearChart()">Clear Chart</button>
+    
+    <div id="testChart"></div>
+    
+    <script>
+        let chart = null;
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+            console.log(message);
+        }
+        
+        function initChart() {
+            updateStatus('Inicializando gráfico...');
+            const container = document.getElementById('testChart');
+            
+            if (!container) {
+                updateStatus('ERROR: Contenedor no encontrado');
+                return false;
+            }
+            
+            chart = echarts.init(container);
+            updateStatus('Gráfico inicializado correctamente');
+            return true;
+        }
+        
+        function testBasicChart() {
+            if (!chart && !initChart()) return;
+            
+            updateStatus('Creando gráfico básico...');
+            
+            const testData = [
+                [107000, 107500, 106500, 107200],
+                [107200, 107800, 107000, 107600],
+                [107600, 108000, 107300, 107800],
+                [107800, 108200, 107500, 108000],
+                [108000, 108500, 107800, 108300]
+            ];
+            
+            const option = {
+                backgroundColor: '#0C111C',
+                grid: {
+                    left: '10%',
+                    right: '8%',
+                    top: '8%',
+                    bottom: '15%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['1', '2', '3', '4', '5'],
+                    axisLine: { lineStyle: { color: '#2A2E39' } },
+                    axisLabel: { color: '#D1D4DC' }
+                },
+                yAxis: {
+                    type: 'value',
+                    scale: true,
+                    axisLine: { show: false },
+                    axisLabel: { color: '#D1D4DC' },
+                    splitLine: { lineStyle: { color: '#2A2E39', type: 'dashed' } }
+                },
+                series: [{
+                    name: 'Test Candlestick',
+                    type: 'candlestick',
+                    data: testData,
+                    itemStyle: {
+                        color: '#089981',
+                        color0: '#F23645',
+                        borderColor: '#089981',
+                        borderColor0: '#F23645'
+                    }
+                }],
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: '#131722',
+                    borderColor: '#2A2E39',
+                    textStyle: { color: '#D1D4DC' }
+                }
+            };
+            
+            chart.setOption(option);
+            updateStatus('Gráfico básico creado exitosamente');
+        }
+        
+        async function testRealData() {
+            if (!chart && !initChart()) return;
+            
+            updateStatus('Obteniendo datos reales...');
+            
+            try {
+                const response = await fetch('/api/exchange/klines/binance?symbol=BTCUSDT&interval=4h&limit=20');
+                const result = await response.json();
+                
+                updateStatus(`Datos recibidos: ${result.data.length} velas`);
+                
+                const candleData = result.data.map(candle => [
+                    candle.open, candle.close, candle.low, candle.high
+                ]);
+                
+                const timeLabels = result.data.map((candle, index) => 
+                    new Date(candle.timestamp).toLocaleTimeString()
+                );
+                
+                const option = {
+                    backgroundColor: '#0C111C',
+                    grid: {
+                        left: '10%',
+                        right: '8%',
+                        top: '8%',
+                        bottom: '15%'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: timeLabels,
+                        axisLine: { lineStyle: { color: '#2A2E39' } },
+                        axisLabel: { color: '#D1D4DC', fontSize: 10 }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        scale: true,
+                        axisLine: { show: false },
+                        axisLabel: { color: '#D1D4DC' },
+                        splitLine: { lineStyle: { color: '#2A2E39', type: 'dashed' } }
+                    },
+                    series: [{
+                        name: 'BTCUSDT',
+                        type: 'candlestick',
+                        data: candleData,
+                        itemStyle: {
+                            color: '#089981',
+                            color0: '#F23645',
+                            borderColor: '#089981',
+                            borderColor0: '#F23645'
+                        }
+                    }],
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: '#131722',
+                        borderColor: '#2A2E39',
+                        textStyle: { color: '#D1D4DC' }
+                    }
+                };
+                
+                chart.setOption(option);
+                updateStatus('Gráfico con datos reales creado exitosamente');
+                
+            } catch (error) {
+                updateStatus(`ERROR: ${error.message}`);
+            }
+        }
+        
+        function clearChart() {
+            if (chart) {
+                chart.clear();
+                updateStatus('Gráfico limpiado');
+            }
+        }
+        
+        // Inicializar cuando cargue la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('Página cargada, listo para pruebas');
+        });
+    </script>
+</body>
+</html>

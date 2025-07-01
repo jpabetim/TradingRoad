@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Configuración del Sistema</h1>
+<div class="config-container">
+    <div class="config-sidebar">
+        <ul class="config-tabs">
+            <li class="tab-item active" data-tab="theme">Tema</li>
+            <li class="tab-item" data-tab="api-keys">API Keys</li>
+            <li class="tab-item" data-tab="display">Visualización</li>
+            <li class="tab-item" data-tab="notifications">Notificaciones</li>
+        </ul>
+    </div>
+    
+    <div class="config-content">
+        <div id="theme-config" class="config-tab-content active">
+            <h2>Configuración de Tema</h2>
+            <div class="theme-options">
+                <div class="theme-option" data-theme="dark">
+                    <div class="theme-preview dark-theme"></div>
+                    <span>Oscuro</span>
+                </div>
+                <div class="theme-option" data-theme="light">
+                    <div class="theme-preview light-theme"></div>
+                    <span>Claro</span>
+                </div>
+                <div class="theme-option" data-theme="blue">
+                    <div class="theme-preview blue-theme"></div>
+                    <span>Azul</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="api-keys-config" class="config-tab-content">
+            <h2>API Keys</h2>
+            <form id="api-keys-form">
+                <div class="form-group">
+                    <label for="yahoo-finance-key">Yahoo Finance API Key:</label>
+                    <input type="password" id="yahoo-finance-key" name="yahoo_finance" placeholder="Ingrese su API key">
+                    <span class="help-text">Requerido para datos de mercado en tiempo real</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="alpha-vantage-key">Alpha Vantage API Key:</label>
+                    <input type="password" id="alpha-vantage-key" name="alpha_vantage" placeholder="Ingrese su API key">
+                    <span class="help-text">Requerido para datos históricos y análisis técnico</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="investing-key">Investing.com API Key:</label>
+                    <input type="password" id="investing-key" name="investing" placeholder="Ingrese su API key">
+                    <span class="help-text">Requerido para el calendario económico</span>
+                </div>
+            </form>
+        </div>
+        
+        <div id="display-config" class="config-tab-content">
+            <h2>Configuración de Visualización</h2>
+            <form id="display-form">
+                <div class="form-group">
+                    <label for="chart-type">Tipo de Gráfico Predeterminado:</label>
+                    <select id="chart-type" name="default_chart_type">
+                        <option value="candlestick">Velas (Candlestick)</option>
+                        <option value="line">Líneas</option>
+                        <option value="bar">Barras</option>
+                        <option value="area">Área</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time-frame">Marco Temporal Predeterminado:</label>
+                    <select id="time-frame" name="default_time_frame">
+                        <option value="1d">1 día</option>
+                        <option value="1w">1 semana</option>
+                        <option value="1m">1 mes</option>
+                        <option value="3m">3 meses</option>
+                        <option value="6m">6 meses</option>
+                        <option value="1y">1 año</option>
+                    </select>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="show-indicators" name="show_indicators" checked>
+                        Mostrar Indicadores
+                    </label>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="show-volume" name="show_volume" checked>
+                        Mostrar Volumen
+                    </label>
+                </div>
+            </form>
+        </div>
+        
+        <div id="notifications-config" class="config-tab-content">
+            <h2>Configuración de Notificaciones</h2>
+            <form id="notifications-form">
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="email-alerts" name="email_alerts">
+                        Activar Alertas por Email
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Su dirección de email">
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="price-alerts" name="price_alerts">
+                        Alertas de Precio
+                    </label>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="news-alerts" name="news_alerts">
+                        Alertas de Noticias
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="config-actions">
+    <button id="save-config" class="primary-btn">Guardar Configuración</button>
+    <button id="reset-config" class="secondary-btn">Restablecer por Defecto</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/config.js"></script>
+{% endblock %}

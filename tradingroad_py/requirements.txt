@@ -1,0 +1,12 @@
+Flask==2.3.3
+yfinance==0.2.32
+pandas>=2.1.1
+numpy>=1.26.0
+investpy==1.0.8
+Flask-Cors
+Flask-SocketIO
+ccxt
+websockets
+requests
+websocket-client
+python-dotenv

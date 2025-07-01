@@ -1,0 +1,456 @@
+/* Estilos para el módulo de análisis técnico avanzado */
+.trading-analysis-container {
+    display: flex;
+    height: calc(100vh - 80px);
+    /* Restar la altura del header */
+    width: 100%;
+    overflow: hidden;
+    position: absolute;
+    top: 80px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Tema claro/oscuro */
+body.light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #dddddd;
+    --highlight-color: #9B7DFF;
+    --chart-bg: #f5f5f5;
+    --chart-grid: #dddddd;
+    --chart-text: #333333;
+    --panel-bg: #f0f0f0;
+    --btn-bg: #e0e0e0;
+    --btn-hover: #d0d0d0;
+    --btn-active: #9B7DFF;
+    --btn-text: #333333;
+}
+
+body.dark-theme {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #131722;
+    --text-primary: #d9d9d9;
+    --text-secondary: #a0a0a0;
+    --border-color: #2d3748;
+    --highlight-color: #9B7DFF;
+    --chart-bg: #131722;
+    --chart-grid: #1e222d;
+    --chart-text: #d9d9d9;
+    --panel-bg: #1a1a2e;
+    --btn-bg: #2d3748;
+    --btn-hover: #4a5568;
+    --btn-active: #9B7DFF;
+    --btn-text: white;
+}
+
+/* Por defecto usar tema oscuro */
+:root {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #131722;
+    --text-primary: #d9d9d9;
+    --text-secondary: #a0a0a0;
+    --border-color: #2d3748;
+    --highlight-color: #9B7DFF;
+    --chart-bg: #131722;
+    --chart-grid: #1e222d;
+    --chart-text: #d9d9d9;
+    --panel-bg: #1a1a2e;
+    --btn-bg: #2d3748;
+    --btn-hover: #4a5568;
+    --btn-active: #9B7DFF;
+    --btn-text: white;
+}
+
+.sidebar-controls {
+    width: 300px;
+    background-color: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.sidebar-controls.collapsed {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.market-controls {
+    padding: 15px;
+}
+
+.market-controls h2,
+.ai-panel h2 {
+    color: #9B7DFF;
+    border-bottom: 1px solid #2d3748;
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #cbd5e0;
+    font-size: 14px;
+}
+
+.control-group select {
+    width: 100%;
+    padding: 8px;
+    background-color: #2d3748;
+    color: white;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.time-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.time-btn {
+    padding: 6px 10px;
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.time-btn:hover {
+    background-color: #4a5568;
+}
+
+.time-btn.active {
+    background-color: #9B7DFF;
+    border-color: #9B7DFF;
+}
+
+.indicators-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.indicator-btn {
+    padding: 6px 10px;
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.indicator-btn:hover {
+    background-color: #4a5568;
+}
+
+.indicator-settings {
+    background-color: #1e222d;
+    border: 1px solid #2d3748;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.indicator-settings h3 {
+    margin-top: 0;
+    color: #9B7DFF;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.indicator-settings label {
+    display: inline-block;
+    width: 80px;
+    color: #cbd5e0;
+    font-size: 13px;
+}
+
+.indicator-settings input {
+    width: 60px;
+    padding: 5px;
+    background-color: #2d3748;
+    color: white;
+    border: 1px solid #4a5568;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.indicator-settings button {
+    padding: 5px 10px;
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 5px;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+.indicator-settings button:hover {
+    background-color: #4a5568;
+}
+
+.indicator-settings .apply-indicator {
+    background-color: #9B7DFF;
+    border-color: #9B7DFF;
+}
+
+.indicator-settings .remove-indicator {
+    background-color: #ef5350;
+    border-color: #ef5350;
+}
+
+.action-button {
+    padding: 8px 12px;
+    margin-right: 5px;
+    border: 1px solid #4a5568;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #2d3748;
+    color: white;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: #4a5568;
+}
+
+.action-button.blue {
+    background-color: #9B7DFF;
+    border-color: #9B7DFF;
+}
+
+.action-button.blue:hover {
+    background-color: #8462ff;
+}
+
+.action-button.purple {
+    background-color: #a855f7;
+    border-color: #a855f7;
+}
+
+.action-button.purple:hover {
+    background-color: #9333ea;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 20px;
+}
+
+.ai-panel {
+    padding: 15px;
+    flex-grow: 1;
+    border-top: 1px solid #2d3748;
+    margin-top: 20px;
+}
+
+.ai-instruction {
+    color: #a0aec0;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.ai-content {
+    background-color: #1e1e30;
+    border-radius: 5px;
+    padding: 12px;
+    min-height: 200px;
+    color: #e2e8f0;
+    font-size: 14px;
+}
+
+.ai-content p {
+    margin: 8px 0;
+}
+
+.ai-content ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.ai-content .bullish {
+    color: #26a69a;
+    font-weight: bold;
+}
+
+.ai-content .bearish {
+    color: #ef5350;
+    font-weight: bold;
+}
+
+/* Estilos para el chat de IA */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-message {
+    background-color: #2d3748;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    max-width: 85%;
+}
+
+.chat-message.user {
+    background-color: #9B7DFF;
+    align-self: flex-end;
+}
+
+.chat-input {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    resize: none;
+    height: 80px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.chat-send {
+    background-color: #9B7DFF;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    align-self: flex-end;
+    font-size: 14px;
+}
+
+.chat-send:hover {
+    background-color: #8462ff;
+}
+
+/* Contenedor del gráfico principal */
+.main-chart-container {
+    flex-grow: 1;
+    background-color: var(--chart-bg);
+    position: relative;
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+}
+
+.main-chart-container.expanded {
+    width: 100%;
+}
+
+/* Leyenda del gráfico */
+.chart-legend {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 15px;
+    background-color: rgba(26, 26, 46, 0.7);
+    padding: 8px 15px;
+    border-radius: 4px;
+    z-index: 5;
+}
+
+.chart-legend div {
+    color: #d9d9d9;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+#chart-symbol {
+    font-weight: bold;
+    color: #9B7DFF;
+}
+
+#chart-price {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#chart-change.positive {
+    color: #26a69a;
+}
+
+#chart-change.negative {
+    color: #ef5350;
+}
+
+#chart-timeframe {
+    background-color: #2d3748;
+    padding: 3px 8px;
+    border-radius: 3px;
+}
+
+#chart-active-indicators {
+    font-size: 13px;
+    color: #a0aec0;
+}
+
+/* Indicador de carga */
+.chart-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(19, 23, 34, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    color: #d9d9d9;
+    font-size: 16px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 4px solid rgba(155, 125, 255, 0.2);
+    border-top-color: #9B7DFF;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Ocultar footer en la página de análisis */
+footer.analysis-footer {
+    display: none;
+}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Bienvenido a TradingRoad</h1>
+
+<!-- Sección de Cards/Iconos de las Secciones -->
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <h2>Análisis Técnico</h2>
+        <p>Accede a nuestras herramientas de análisis técnico para tomar decisiones informadas.</p>
+        <a href="/analysis" class="primary-btn">Ver Análisis</a>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2>Trading</h2>
+        <p>Plataforma de trading en desarrollo. Próximamente disponible.</p>
+        <a href="/trading" class="primary-btn">Ver Detalles</a>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2>Vencimientos</h2>
+        <p>Analiza los vencimientos de derivados y su impacto en el mercado.</p>
+        <a href="/volatility" class="primary-btn">Ver Vencimientos</a>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2>Noticias Financieras</h2>
+        <p>Mantente informado con las últimas noticias del mercado financiero.</p>
+        <a href="/news" class="primary-btn">Ver Noticias</a>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2>Calendario Económico</h2>
+        <p>No te pierdas los eventos económicos más importantes.</p>
+        <a href="/calendar" class="primary-btn">Ver Calendario</a>
+    </div>
+    
+    <div class="dashboard-card">
+        <h2>Configuración</h2>
+        <p>Personaliza la plataforma según tus necesidades y preferencias.</p>
+        <a href="/config" class="primary-btn">Ver Configuración</a>
+    </div>
+</div>
+
+<!-- Resumen del Mercado -->
+<div class="market-summary">
+    <h2>Resumen del Mercado</h2>
+    <ul>
+        <li>S&P 500: <span id="sp500">4,500.00</span> <span class="change positive">+0.3%</span></li>
+        <li>NASDAQ: <span id="nasdaq">14,000.00</span> <span class="change positive">+0.5%</span></li>
+        <li>Dow Jones: <span id="dow">34,500.00</span> <span class="change negative">-0.1%</span></li>
+        <li>EUR/USD: <span id="eurusd">1.10</span> <span class="change negative">-0.2%</span></li>
+        <li>BTC/USD: <span id="btcusd">30,000.00</span> <span class="change positive">+1.2%</span></li>
+        <li>Oro: <span id="gold">2,100.00</span> <span class="change positive">+0.4%</span></li>
+    </ul>
+</div>
+
+<!-- Noticias Principales -->
+<div class="news-section">
+    <h2>Noticias Principales</h2>
+    <div class="news-grid" id="news-container">
+        <!-- Loading placeholder -->
+        <div class="news-loading">
+            <div class="loading-spinner"></div>
+            <p>Cargando noticias financieras...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Cargar noticias reales inmediatamente
+(function() {
+    console.log('Script de noticias ejecutándose...');
+    
+    function loadRealNews() {
+        console.log('Cargando noticias reales...');
+        const container = document.getElementById('news-container');
+        
+        if (!container) {
+            console.error('No se encontró el contenedor de noticias');
+            return;
+        }
+        
+        fetch('/api/news/real')
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos:', data);
+                if (data.news && data.news.length > 0) {
+                    renderNews(data.news, container);
+                } else {
+                    renderError('No se pudieron cargar las noticias', container);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                renderError('Error de conexión', container);
+            });
+    }
+    
+    function renderNews(newsArray, container) {
+        console.log('Renderizando', newsArray.length, 'noticias');
+        container.innerHTML = '';
+        
+        newsArray.forEach(item => {
+            const newsDiv = document.createElement('div');
+            newsDiv.className = 'news-item';
+            
+            newsDiv.innerHTML = `
+                <h3>${escapeHtml(item.title)}</h3>
+                <p>${escapeHtml(item.description)}</p>
+                <span class="news-source">${escapeHtml(item.source)} - ${escapeHtml(item.time)}</span>
+            `;
+            
+            if (item.url && item.url !== '#') {
+                newsDiv.style.cursor = 'pointer';
+                newsDiv.addEventListener('click', () => {
+                    window.open(item.url, '_blank');
+                });
+            }
+            
+            container.appendChild(newsDiv);
+        });
+    }
+    
+    function renderError(message, container) {
+        container.innerHTML = `
+            <div class="news-error">
+                <h3>⚠️ Error al cargar noticias</h3>
+                <p>${message}</p>
+                <button onclick="location.reload()" style="
+                    background: rgba(142, 79, 255, 0.8);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    margin-top: 15px;
+                ">Reintentar</button>
+            </div>
+        `;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Cargar noticias cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadRealNews);
+    } else {
+        loadRealNews();
+    }
+})();
+</script>
+
+{% endblock %}

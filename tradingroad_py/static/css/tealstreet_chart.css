@@ -1,0 +1,549 @@
+/* TealStreet Style CSS - Modern Trading Chart Interface */
+
+:root {
+    /* Color Variables */
+    --bg-primary: #0C111C;
+    --bg-secondary: #131722;
+    --bg-tertiary: #1E2230;
+    --border-color: #2A2E39;
+    --text-primary: #D9D9D9;
+    --text-secondary: #787B86;
+    --accent-blue: #2962FF;
+    --accent-green: #089981;
+    --accent-red: #F23645;
+    --glass-bg: rgba(30, 34, 48, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: rgba(0, 0, 0, 0.4);
+    
+    /* Sizing */
+    --header-height: 48px;
+    --toolbar-width: 40px;
+    --sidebar-width: 280px;
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.tealstreet-theme {
+    color-scheme: dark;
+}
+
+/* Layout */
+.tealstreet-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Top Bar */
+.tealstreet-topbar {
+    height: var(--header-height);
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+}
+
+.topbar-left, .topbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.logo-section {
+    margin-right: 20px;
+}
+
+.brand {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-shadow: 0 0 10px rgba(41, 98, 255, 0.4);
+}
+
+.market-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.select-control {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.symbol-search {
+    display: flex;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.symbol-search input {
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 5px 10px;
+    outline: none;
+    width: 100px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    padding: 5px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    color: var(--accent-blue);
+}
+
+.timeframe-controls {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+    gap: 2px;
+}
+
+.tf-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tf-btn:hover {
+    background-color: rgba(41, 98, 255, 0.1);
+    color: var(--accent-blue);
+}
+
+.tf-btn.active {
+    background-color: rgba(41, 98, 255, 0.15);
+    color: var(--accent-blue);
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-primary:hover {
+    background-color: rgba(41, 98, 255, 0.8);
+}
+
+.view-controls {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+    gap: 5px;
+}
+
+/* Main Area */
+.tealstreet-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Symbol Header */
+.symbol-header {
+    height: 40px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+}
+
+.symbol-info {
+    display: flex;
+    align-items: center;
+}
+
+.symbol-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+.exchange-tag {
+    background-color: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.price-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.current-price {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.price-change {
+    font-size: 12px;
+}
+
+.price-change.positive {
+    color: var(--accent-green);
+}
+
+.price-change.negative {
+    color: var(--accent-red);
+}
+
+.market-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-weight: 600;
+}
+
+/* Chart Container */
+.chart-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Chart Toolbar */
+.chart-toolbar {
+    width: var(--toolbar-width);
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 20px;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+
+.tool-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.tool-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.tool-btn.active {
+    background-color: var(--bg-tertiary);
+    color: var(--accent-blue);
+    border-left: 2px solid var(--accent-blue);
+}
+
+/* Chart Area */
+.chart-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-chart {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.active-indicators {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.indicator-chip {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.indicator-chip .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 10px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.indicator-chip .close-btn:hover {
+    color: var(--accent-red);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    overflow: auto;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    margin: 5% auto;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.search-container {
+    margin-bottom: 20px;
+}
+
+#indicatorSearch {
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.indicator-categories {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.category-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.category-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.category-btn.active {
+    background-color: rgba(41, 98, 255, 0.15);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.indicator-card {
+    background-color: var(--bg-tertiary);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.indicator-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.indicator-icon {
+    width: 36px;
+    height: 36px;
+    background-color: var(--accent-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.indicator-icon.custom {
+    background-color: #7747DC;
+}
+
+.indicator-info {
+    flex: 1;
+}
+
+.indicator-info h4 {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.indicator-info p {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.add-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.add-btn:hover {
+    background-color: rgba(41, 98, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .timeframe-controls {
+        overflow-x: auto;
+        max-width: 200px;
+    }
+    
+    .market-selector {
+        flex-wrap: wrap;
+    }
+    
+    .indicators-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingRoad - TealStreet Chart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tealstreet_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tealstreet_premium.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+</head>
+<body class="tealstreet-theme">
+    <!-- Layout TealStreet Style -->
+    <div class="tealstreet-layout">
+        <!-- Top Bar with controls -->
+        <div class="tealstreet-topbar">
+            <div class="topbar-left">
+                <div class="logo-section">
+                    <h1 class="brand">TradingRoad</h1>
+                </div>
+                <div class="market-selector">
+                    <select id="exchangeSelect" class="select-control">
+                        <option value="binance">Binance</option>
+                        <option value="bybit">Bybit</option>
+                        <option value="coinbase">Coinbase</option>
+                        <option value="kucoin">KuCoin</option>
+                    </select>
+                    <div class="symbol-search">
+                        <input type="text" id="symbolInput" placeholder="BTC/USDT" value="BTCUSDT">
+                        <button id="searchSymbol" class="btn-icon">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="timeframe-controls">
+                    <button class="tf-btn" data-tf="1m">1m</button>
+                    <button class="tf-btn" data-tf="5m">5m</button>
+                    <button class="tf-btn" data-tf="15m">15m</button>
+                    <button class="tf-btn" data-tf="30m">30m</button>
+                    <button class="tf-btn active" data-tf="1h">1h</button>
+                    <button class="tf-btn" data-tf="4h">4h</button>
+                    <button class="tf-btn" data-tf="1d">1D</button>
+                    <button class="tf-btn" data-tf="1w">1W</button>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="indicator-controls">
+                    <button id="addIndicator" class="btn-primary">
+                        <i class="fas fa-chart-line"></i> Indicadores
+                    </button>
+                </div>
+                <div class="view-controls">
+                    <button class="btn-icon" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="btn-icon" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart Area -->
+        <div class="tealstreet-main">
+            <!-- Symbol Info Header -->
+            <div class="symbol-header">
+                <div class="symbol-info">
+                    <span class="symbol-name">BTCUSDT</span>
+                    <span class="exchange-tag">Binance</span>
+                </div>
+                <div class="price-info">
+                    <span class="current-price">$67,834.50</span>
+                    <span class="price-change positive">+1,234.50 (+1.85%)</span>
+                </div>
+                <div class="market-stats">
+                    <span class="stat-item">
+                        <span class="stat-label">Vol:</span>
+                        <span class="stat-value">1.2B</span>
+                    </span>
+                    <span class="stat-item">
+                        <span class="stat-label">High:</span>
+                        <span class="stat-value">68,245.30</span>
+                    </span>
+                    <span class="stat-item">
+                        <span class="stat-label">Low:</span>
+                        <span class="stat-value">66,123.80</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <!-- Left Toolbar -->
+                <div class="chart-toolbar">
+                    <div class="tool-group">
+                        <button class="tool-btn active" title="Cursor">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </button>
+                        <button class="tool-btn" title="Crosshair">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Trend Line">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="tool-btn" title="Horizontal Line">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="tool-btn" title="Vertical Line">
+                            <i class="fas fa-grip-lines-vertical"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Rectangle">
+                            <i class="far fa-square"></i>
+                        </button>
+                        <button class="tool-btn" title="Fibonacci">
+                            <i class="fas fa-vector-square"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Text">
+                            <i class="fas fa-font"></i>
+                        </button>
+                        <button class="tool-btn" title="Clear">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chart Area -->
+                <div class="chart-area">
+                    <div id="mainChart" class="main-chart"></div>
+                    
+                    <!-- Indicator Chips -->
+                    <div class="active-indicators">
+                        <!-- Will be filled dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicator Modal -->
+    <div id="indicatorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Indicador</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-container">
+                    <input type="text" id="indicatorSearch" placeholder="Buscar indicador...">
+                    <div class="indicator-categories">
+                        <button class="category-btn active" data-category="all">Todos</button>
+                        <button class="category-btn" data-category="trend">Tendencia</button>
+                        <button class="category-btn" data-category="momentum">Momentum</button>
+                        <button class="category-btn" data-category="volatility">Volatilidad</button>
+                        <button class="category-btn" data-category="volume">Volumen</button>
+                        <button class="category-btn" data-category="custom">Personalizados</button>
+                    </div>
+                </div>
+                <div class="indicators-grid">
+                    <!-- Trend Indicators -->
+                    <div class="indicator-card" data-category="trend">
+                        <div class="indicator-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>SMA</h4>
+                            <p>Media Móvil Simple</p>
+                        </div>
+                        <button class="add-btn" data-indicator="sma">+</button>
+                    </div>
+                    <div class="indicator-card" data-category="trend">
+                        <div class="indicator-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>EMA</h4>
+                            <p>Media Móvil Exponencial</p>
+                        </div>
+                        <button class="add-btn" data-indicator="ema">+</button>
+                    </div>
+                    <!-- Momentum Indicators -->
+                    <div class="indicator-card" data-category="momentum">
+                        <div class="indicator-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>RSI</h4>
+                            <p>Índice de Fuerza Relativa</p>
+                        </div>
+                        <button class="add-btn" data-indicator="rsi">+</button>
+                    </div>
+                    <div class="indicator-card" data-category="momentum">
+                        <div class="indicator-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>MACD</h4>
+                            <p>Convergencia/Divergencia</p>
+                        </div>
+                        <button class="add-btn" data-indicator="macd">+</button>
+                    </div>
+                    <!-- Volatility Indicators -->
+                    <div class="indicator-card" data-category="volatility">
+                        <div class="indicator-icon">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>Bollinger</h4>
+                            <p>Bandas de Bollinger</p>
+                        </div>
+                        <button class="add-btn" data-indicator="bollinger">+</button>
+                    </div>
+                    <div class="indicator-card" data-category="volatility">
+                        <div class="indicator-icon">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>ATR</h4>
+                            <p>Rango Medio Verdadero</p>
+                        </div>
+                        <button class="add-btn" data-indicator="atr">+</button>
+                    </div>
+                    <!-- Volume Indicators -->
+                    <div class="indicator-card" data-category="volume">
+                        <div class="indicator-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>OBV</h4>
+                            <p>On-Balance Volume</p>
+                        </div>
+                        <button class="add-btn" data-indicator="obv">+</button>
+                    </div>
+                    <!-- Custom Indicator (Placeholder) -->
+                    <div class="indicator-card" data-category="custom">
+                        <div class="indicator-icon custom">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="indicator-info">
+                            <h4>Custom</h4>
+                            <p>Indicador Personalizado</p>
+                        </div>
+                        <button class="add-btn" data-indicator="custom">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="{{ url_for('static', filename='js/tealstreet_chart.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/volatility.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sentimiento de Mercado y Vencimientos</h1>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="currency-selector-btn">Moneda:</label>
+                    <div id="currency-selector-btn" class="currency-selector">
+                        <button id="btn-btc" class="active">BTC</button>
+                        <button id="btn-eth">ETH</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="expiration-selector">Vencimiento:</label>
+                    <select id="expiration-selector"></select>
+                </div>
+                <div class="control-group">
+                    <label>Unidad de Medida:</label>
+                    <div class="unit-toggle">
+                        <span class="unit-label">USD</span>
+                        <label class="switch">
+                            <input type="checkbox" id="unit-toggle-checkbox">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="unit-label" id="asset-unit-label">BTC</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <p>Datos actualizados a las <span id="update-time">--:--:--</span></p>
+
+        <div class="metrics-grid">
+            <div class="metric-card"><h4>OI Total Promedio</h4><p id="metric-oi-total-average">$0</p></div>
+            <div class="metric-card"><h4>Funding Rate Promedio</h4><p id="metric-funding-rate-average">0.00%</p></div>
+            <div class="metric-card"><h4>Próxima Financiación</h4><p id="metric-next-funding-time">N/A</p></div>
+            <div class="metric-card"><h4>Precio Actual</h4><p id="metric-current-price">$0.00</p></div>
+            <div class="metric-card"><h4>Máximo Semanal</h4><p id="metric-week-high">$0.00</p></div>
+            <div class="metric-card"><h4>Mínimo Semanal</h4><p id="metric-week-low">$0.00</p></div>
+        </div>
+
+        <div class="max-pain-section">
+            <h2>Max Pain</h2>
+            <p id="max-pain-display">$0</p>
+        </div>
+        
+        <div class="charts-grid">
+            <div id="strike-chart-container" class="chart-container solo-chart">
+                <div class="loading-spinner hidden"></div>
+                <h3>Interés Abierto por Strike</h3>
+                <div class="strike-chart-metrics">
+                    <div class="metric-card"><h4>Call OI</h4><p id="metric-call-oi">0</p></div>
+                    <div class="metric-card"><h4>Put OI</h4><p id="metric-put-oi">0</p></div>
+                    <div class="metric-card"><h4>Total OI</h4><p id="metric-total-oi">0</p></div>
+                    <div class="metric-card"><h4>P/C Ratio (OI)</h4><p id="metric-pc-ratio">0.00</p></div>
+                    <div class="metric-card"><h4>P/C Ratio (Vol)</h4><p id="metric-pc-ratio-vol">0.00</p></div>
+                    <div class="metric-card"><h4>Valor Nocional</h4><p id="metric-notional-value">$0</p></div>
+                </div>
+                <div class="chart-render-area" id="strike-chart-render-area"></div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+             <div id="volume-chart-container" class="chart-container solo-chart">
+                 <div class="loading-spinner hidden"></div>
+                 <h3>Volumen por Strike (24h)</h3>
+                 <div class="chart-render-area" id="volume-chart-render-area"></div>
+             </div>
+        </div>
+
+        <div class="sentiment-and-expirations-section">
+            <div class="charts-grid">
+                <div id="expiration-chart-container" class="chart-container">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Interés Abierto Global por Vencimiento</h3>
+                    <div class="chart-render-area" id="expiration-chart-render-area"></div>
+                </div>
+                <div id="dvol-history-chart-container" class="chart-container">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Historial de Volatilidad (DVOL)</h3>
+                    <div class="chart-render-area" id="dvol-history-render-area"></div>
+                </div>
+                <div id="open-interest-chart-container" class="chart-container">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Interés Abierto Agregado (Histórico 4h)</h3>
+                    <div class="chart-render-area" id="open-interest-render-area"></div>
+                </div>
+                <div id="long-short-chart-container" class="chart-container">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Ratio Global Long/Short (Histórico 1h)</h3>
+                    <div class="chart-render-area" id="long-short-render-area"></div>
+                </div>
+                <div id="funding-rate-history-chart-container" class="chart-container">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Historial de Tasa de Financiación</h3>
+                    <div class="chart-render-area" id="funding-rate-history-render-area"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="volatility-analysis-section">
+             <h2>Análisis de Volatilidad</h2>
+             <div class="charts-grid">
+                <div id="volatility-smile-chart-container" class="chart-container solo-chart">
+                    <div class="loading-spinner hidden"></div>
+                    <h3>Sonrisa de Volatilidad (IV vs Strike)</h3>
+                    <p class="chart-note">Selecciona una fecha de vencimiento específica para ver este gráfico.</p>
+                    <div class="chart-render-area" id="volatility-smile-render-area"></div>
+                </div>
+             </div>
+        </div>
+
+        <div class="order-book-section">
+            <div class="section-header">
+                <h3>Libro de Órdenes</h3>
+                <div id="order-book-step-selector" class="time-selector">
+                    <button data-step="0" class="active">Detalle</button>
+                    <button data-step="100">100</button>
+                    <button data-step="1000">1K</button>
+                    <button data-step="5000">5K</button>
+                    <button data-step="10000">10K</button>
+                </div>
+            </div>
+            <div class="order-book-display">
+                <div class="asks-column"><h4>Asks (Ventas)</h4><div class="order-book-table-container"><table class="order-book-table"><thead><tr><th>Precio</th><th>Cantidad (USD)</th></tr></thead><tbody id="order-book-asks"></tbody></table></div></div>
+                <div class="bids-column"><h4>Bids (Compras)</h4><div class="order-book-table-container"><table class="order-book-table"><thead><tr><th>Precio</th><th>Cantidad (USD)</th></tr></thead><tbody id="order-book-bids"></tbody></table></div></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="chart-modal" class="modal-container hidden">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close">&times;</button>
+            <h3 id="modal-title"></h3>
+            <div id="modal-chart-render-area" class="chart-render-area"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/derivatives.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,96 @@
+/* Estilos para las herramientas de dibujo */
+.drawing-tools-container {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(30, 34, 45, 0.8);
+    border-radius: 5px;
+    padding: 5px;
+    z-index: 100;
+}
+
+.drawing-tool {
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+    border: 1px solid #2a2e39;
+    border-radius: 3px;
+    margin: 3px;
+    color: #d9d9d9;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.drawing-tool:hover {
+    background-color: #2a2e39;
+}
+
+.drawing-tool.active {
+    background-color: #5d43b5;
+    color: white;
+    border-color: #9B7DFF;
+}
+
+/* Estilos específicos para la sección de trading */
+.trading-mode .market-controls {
+    height: calc(100% - 20px);
+}
+
+.trading-mode .ai-panel {
+    display: none !important;
+}
+
+.trading-mode #aiAnalysis {
+    display: none !important;
+}
+
+.trading-mode .section-analysis {
+    display: none !important;
+}
+
+/* Mejoras visuales para la fuente y tamaños de elementos en el gráfico */
+.chart-legend {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#chart-symbol {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+#chart-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #d9d9d9;
+}
+
+#chart-change.positive {
+    color: #26a69a;
+}
+
+#chart-change.negative {
+    color: #ef5350;
+}
+
+/* Mejorar visibilidad para los precios máximos y mínimos */
+.price-marker {
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 3px;
+    background-color: rgba(30, 34, 45, 0.7);
+}
+
+.max-price {
+    border-left: 3px solid #26a69a;
+}
+
+.min-price {
+    border-left: 3px solid #ef5350;
+}

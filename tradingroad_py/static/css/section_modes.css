@@ -1,0 +1,167 @@
+/* Estilos específicos para los modos de Trading y Análisis */
+
+/* General - para todas las secciones */
+body {
+    --background-color: #0f1217;
+    --text-color: #d9d9d9;
+    --panel-background: #1e222d;
+    --panel-border: #2a2e39;
+    --accent-color: #5d43b5;
+    --accent-hover: #9B7DFF;
+    --success-color: #26a69a;
+    --error-color: #ef5350;
+    --warning-color: #ff9800;
+
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Sección de Análisis */
+.section-analysis .ai-panel {
+    display: block;
+}
+
+.section-analysis #aiAnalysis {
+    display: inline-block;
+}
+
+.analysis-mode .main-chart-container {
+    height: calc(100% - 40px);
+}
+
+/* Sección de Trading */
+.section-trading .ai-panel {
+    display: none;
+}
+
+.section-trading #aiAnalysis {
+    display: none;
+}
+
+.trading-mode .main-chart-container {
+    height: calc(100% - 40px);
+}
+
+/* Tema claro */
+body.light-theme {
+    --background-color: #f5f5f5;
+    --text-color: #131722;
+    --panel-background: #ffffff;
+    --panel-border: #dce1e6;
+    --accent-color: #5d43b5;
+    --accent-hover: #9B7DFF;
+}
+
+/* Tema oscuro */
+body.dark-theme {
+    --background-color: #0f1217;
+    --text-color: #d9d9d9;
+    --panel-background: #1e222d;
+    --panel-border: #2a2e39;
+    --accent-color: #5d43b5;
+    --accent-hover: #9B7DFF;
+}
+
+/* Estilos para el contador de vela, marcadores de máximo/mínimo y zona horaria */
+.countdown-timer {
+    font-weight: bold;
+    font-family: monospace;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background-color: rgba(30, 30, 30, 0.7);
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.price-scale-markers {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.price-marker {
+    font-size: 11px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.max-price {
+    background-color: rgba(0, 128, 0, 0.7);
+}
+
+.min-price {
+    background-color: rgba(255, 0, 0, 0.7);
+}
+
+.timezone-selector {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    background-color: rgba(30, 30, 30, 0.7);
+    padding: 5px 8px;
+    border-radius: 4px;
+}
+
+.timezone-selector label {
+    margin-right: 5px;
+    font-size: 12px;
+    color: #f8f8f8;
+}
+
+.timezone-selector select {
+    background-color: #2a2e39;
+    color: #f8f8f8;
+    border: 1px solid #1e222d;
+    border-radius: 3px;
+    padding: 2px;
+    font-size: 12px;
+}
+
+/* Modo Trading */
+.sidebar-controls.trading-mode .ai-panel {
+    display: none !important;
+}
+
+.sidebar-controls.trading-mode .market-controls {
+    padding-bottom: 10px;
+}
+
+.sidebar-controls.trading-mode .section-analysis {
+    display: none !important;
+}
+
+/* Estilos para la sección de Análisis */
+body[data-section="analysis"] .section-trading {
+    display: none;
+}
+
+/* Estilos para la sección de Trading */
+body[data-section="trading"] .section-analysis {
+    display: none;
+}
+
+/* Adaptaciones responsivas */
+@media (max-width: 768px) {
+    .sidebar-controls.trading-mode {
+        width: auto;
+        min-width: auto;
+    }
+}
+
+/* Estilos para cuando el panel está oculto */
+.sidebar-controls.hidden .ai-panel,
+.sidebar-controls.trading-mode.hidden .action-buttons {
+    display: none !important;
+}

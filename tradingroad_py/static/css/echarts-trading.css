@@ -1,0 +1,520 @@
+/* 
+ * ECharts Trading Chart Styles
+ * Optimized for modern trading interface similar to TealStreet
+ */
+
+:root {
+    --primary-bg: #131722;
+    --secondary-bg: #1E222D;
+    --accent-color: #2962FF;
+    --text-color: #D9D9D9;
+    --success-color: #26a69a;
+    --error-color: #ef5350;
+    --warning-color: #FF9800;
+    --border-color: #2A2E39;
+    --hover-bg: #2A2E39;
+    --button-hover: rgba(255, 255, 255, 0.1);
+    --button-active: rgba(30, 64, 175, 0.6);
+    --menu-hover: #2A2E39;
+    --tooltip-bg: #1E222D;
+}
+
+/* Hide scrollbar but allow scrolling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--primary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #404854;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ECharts Container Structure */
+#echartsContainer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 72px);
+    /* Full height minus top bars */
+    position: relative;
+    overflow: hidden;
+}
+
+.echarts-main-chart {
+    height: 70%;
+    width: 100%;
+    background-color: var(--primary-bg);
+}
+
+.echarts-volume-chart {
+    height: 15%;
+    width: 100%;
+    background-color: var(--primary-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.echarts-indicators-container {
+    height: 15%;
+    width: 100%;
+    background-color: var(--primary-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.echarts-indicator-chart {
+    width: 100%;
+    flex: 1;
+    background-color: var(--primary-bg);
+}
+
+/* Loading State */
+.echarts-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(19, 23, 34, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: var(--text-color);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Drawing Tools */
+.echarts-drawing-tools {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px;
+    z-index: 5;
+}
+
+.tool-button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-button:hover {
+    background-color: var(--button-hover);
+}
+
+.tool-button.active {
+    background-color: var(--button-active);
+    color: white;
+}
+
+/* Zoom Controls */
+.echarts-zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 5px;
+    z-index: 5;
+}
+
+.zoom-button {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Indicator Modal */
+.indicators-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.indicators-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.indicators-modal-header h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.indicators-modal-content {
+    padding: 15px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+/* Tabs */
+.indicators-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
+}
+
+.indicator-tab {
+    padding: 8px 15px;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+}
+
+.indicator-tab:hover {
+    color: white;
+}
+
+.indicator-tab.active {
+    color: var(--accent-color);
+}
+
+.indicator-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent-color);
+}
+
+.indicator-tab-content {
+    display: none;
+}
+
+.indicator-tab-content.active {
+    display: block;
+}
+
+/* Indicator Groups */
+.indicator-group {
+    margin-bottom: 15px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: rgba(30, 34, 45, 0.5);
+}
+
+.indicator-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.indicator-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.indicator-toggle {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.indicator-toggle:hover {
+    background-color: rgba(41, 98, 255, 0.1);
+}
+
+.indicator-toggle.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.indicator-params {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.param-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.param-label {
+    font-size: 12px;
+    color: rgba(217, 217, 217, 0.7);
+}
+
+.param-input {
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+/* Custom Tooltip */
+.echarts-tooltip {
+    background-color: var(--tooltip-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    color: var(--text-color) !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+    z-index: 10 !important;
+}
+
+/* Symbol Info Bar */
+.symbol-info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    background-color: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+    height: 32px;
+    font-size: 12px;
+}
+
+.symbol-info-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.symbol-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.timeframe-display {
+    background-color: rgba(19, 23, 34, 0.5);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.price-info-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.price-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.price-label span {
+    font-weight: 500;
+}
+
+.price-change {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.price-change.positive {
+    color: var(--success-color);
+}
+
+.price-change.negative {
+    color: var(--error-color);
+}
+
+.volume-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #8b8d93;
+}
+
+.volume-value {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.countdown-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+}
+
+.countdown-timer {
+    background-color: rgba(30, 34, 45, 0.7);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .symbol-info-bar {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 5px;
+    }
+
+    .price-info-group {
+        flex-wrap: wrap;
+        order: 2;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .timeframe-buttons {
+        overflow-x: auto;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .echarts-drawing-tools {
+        flex-direction: row;
+        top: auto;
+        bottom: 10px;
+    }
+
+    .indicators-modal {
+        width: 95vw;
+    }
+
+    .indicator-params {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Echarts Customization for Better Look */
+.echarts-enhanced .ec-tooltip {
+    background-color: var(--tooltip-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.echarts-enhanced .ec-legend {
+    background-color: transparent !important;
+}
+
+.echarts-enhanced .ec-title {
+    color: var(--text-color) !important;
+}
+
+/* Candlestick Colors Override */
+.echarts-enhanced .ec-candle-up {
+    color: var(--success-color) !important;
+}
+
+.echarts-enhanced .ec-candle-down {
+    color: var(--error-color) !important;
+}
+
+/* Custom Error Display */
+.chart-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(239, 83, 80, 0.1);
+    border: 1px solid var(--error-color);
+    color: var(--text-color);
+    padding: 15px 20px;
+    border-radius: 4px;
+    text-align: center;
+    max-width: 80%;
+}

@@ -1,0 +1,125 @@
+/* Estilos adicionales para indicadores */
+
+/* Hover effects para los botones de indicadores */
+.apply-indicator:hover {
+    background-color: #1976d2;
+}
+
+.remove-indicator:hover {
+    background-color: #d32f2f;
+}
+
+.toggle-indicator {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-indicator:hover {
+    background-color: #444;
+}
+
+/* Mejoras de accesibilidad para controles */
+input[type="range"] {
+    cursor: pointer;
+}
+
+input[type="color"] {
+    cursor: pointer;
+    width: 40px;
+    height: 30px;
+    border: none;
+    padding: 0;
+    border-radius: 3px;
+}
+
+/* Estilo para indicadores activos */
+.indicator-active {
+    background-color: var(--highlight-color);
+}
+
+/* Lista de medias móviles */
+.active-averages {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-secondary);
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.ma-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ma-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 5px;
+    background-color: var(--btn-bg);
+    border-radius: 3px;
+}
+
+.ma-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.ma-info {
+    flex-grow: 1;
+    font-size: 12px;
+}
+
+.ma-remove {
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.ma-remove:hover {
+    color: #ff4b4b;
+}
+
+/* Mejoras para los paneles de control de indicadores */
+.rsi-param-group,
+.rsi-levels-group,
+.rsi-style-group,
+.rsi-toggle-group,
+.volume-toggle-group,
+.volume-style-group,
+.volume-ma-style-group {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* Indicador activo/inactivo */
+.indicator-status {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.indicator-status.active {
+    background-color: #4CAF50;
+}
+
+.indicator-status.inactive {
+    background-color: #F44336;
+}

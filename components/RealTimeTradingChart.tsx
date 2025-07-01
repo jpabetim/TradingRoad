@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   createChart, IChartApi, ISeriesApi,
@@ -60,53 +59,39 @@ type CurrentProviderConfig = BinanceProviderConfig | BingXProviderConfig;
 
 const PROVIDERS_CONFIG: { binance: BinanceProviderConfig; bingx: BingXProviderConfig } = {
   binance: {
-    type: 'binance',
-    name: 'Binance Futures',
-    historicalApi: (symbol, interval) => `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=500`,
-    wsKline: (symbol, interval) => `wss://fstream.binance.com/ws/${symbol.toLowerCase()}@kline_${interval}`,
-    wsTicker: (symbol) => `wss://fstream.binance.com/ws/${symbol.toLowerCase()}@ticker`,
-    formatSymbol: (s) => s.replace(/[^A-Z0-9]/g, '').toUpperCase(),
-    parseHistorical: (data) => data.map(k => ({ time: k[0] / 1000 as UTCTimestamp, open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) })),
-    parseKline: (data) => ({ time: data.k.t / 1000 as UTCTimestamp, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) }),
-    parseTicker: (data, currentSymbol, currentProvider) => ({ price: parseFloat(data.c), changePercent: parseFloat(data.P), volume: parseFloat(data.v), quoteVolume: parseFloat(data.q), symbol: currentSymbol, provider: currentProvider })
+        name: 'Binance Futures',
+        historicalApi: (symbol: string, interval: string, limit: number = 500) =>
+            // Usar el proxy de Flask para Binance
+            `/api/proxy/binance/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+        ws: 'wss://stream.binance.com:9443/ws',
+        formatSymbol: (s: string) => s.replace(/[-/]/g, '').toUpperCase(),
+        parseHistorical: (data: any[]) => data.map(k => ({ time: k[0] / 1000 as UTCTimestamp, open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) })),
+        parseKline: (data) => ({ time: data.k.t / 1000 as UTCTimestamp, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) }),
+        parseTicker: (data, currentSymbol, currentProvider) => ({ price: parseFloat(data.c), changePercent: parseFloat(data.P), volume: parseFloat(data.v), quoteVolume: parseFloat(data.q), symbol: currentSymbol, provider: currentProvider })
   },
   bingx: {
-    type: 'bingx',
-    name: 'BingX Futures',
-    historicalApi: (symbol, interval) => `https://api.allorigins.win/raw?url=https://open-api.bingx.com/openApi/swap/v2/quote/klines?symbol=${symbol}&interval=${interval}&limit=500`,
-    wsBase: 'wss://open-api-swap.bingx.com/swap-market',
-    formatSymbol: (s) => s.toUpperCase(),
-    parseHistorical: (allOriginsParsedResponse: any): CandlestickData[] => {
-      if (allOriginsParsedResponse && typeof allOriginsParsedResponse.contents === 'string') {
-        try {
-          const bingxApiResponse = JSON.parse(allOriginsParsedResponse.contents);
-          if (bingxApiResponse && bingxApiResponse.code === "0" && Array.isArray(bingxApiResponse.data)) {
-            return bingxApiResponse.data.map(k => ({
-              time: k.time / 1000 as UTCTimestamp,
-              open: parseFloat(k.open),
-              high: parseFloat(k.high),
-              low: parseFloat(k.low),
-              close: parseFloat(k.close),
-              volume: parseFloat(k.volume)
-            }));
-          } else {
-            console.error("BingX API error or malformed data in 'contents':", bingxApiResponse?.msg || "Malformed data", bingxApiResponse);
-            throw new Error(`BingX API error: ${bingxApiResponse?.msg || "Malformed data in 'contents'."}`);
-          }
-        } catch (e) {
-          console.error("Error parsing BingX 'contents' string from allorigins.win as JSON:", e, allOriginsParsedResponse.contents);
-          throw new Error("Error parsing BingX 'contents' string from allorigins.win as JSON.");
+        name: 'BingX Futures',
+        historicalApi: (symbol:string, interval: string, limit: number = 500) =>
+            `/api/proxy/bingx/openApi/swap/v2/quote/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+        ws: 'wss://open-api-swap.bingx.com/swap-market',
+        formatSymbol: (s: string) => s.replace(/[-/]/g, '-').toUpperCase(),
+        parseHistorical: (data: any) => {
+            // El proxy de Flask devuelve el JSON directamente.
+            // La estructura esperada es { code: 0, msg: "", data: [...] }
+            if (data && data.code === 0 && Array.isArray(data.data)) {
+                return data.data.map((k: any) => ({
+                    time: (k.time / 1000) as UTCTimestamp,
+                    open: parseFloat(k.open),
+                    high: parseFloat(k.high),
+                    low: parseFloat(k.low),
+                    close: parseFloat(k.close),
+                    volume: parseFloat(k.volume)
+                }));
+            }
+            console.error("Invalid response structure from BingX proxy:", data);
+            return [];
         }
-      } else {
-        console.error("Invalid response structure from allorigins.win proxy for BingX historical data. 'contents' field missing or not a string:", allOriginsParsedResponse);
-        throw new Error("Invalid response structure from allorigins.win proxy for BingX historical data.");
-      }
-    },
-    getKlineSubMessage: (symbol, interval) => JSON.stringify({ id: crypto.randomUUID(), reqType: 'sub', dataType: `${symbol}@kline_${interval}` }),
-    getTickerSubMessage: (symbol) => JSON.stringify({ id: crypto.randomUUID(), reqType: 'sub', dataType: `${symbol}@trade` }),
-    parseKline: (data) => ({ time: data.T / 1000 as UTCTimestamp, open: parseFloat(data.o), high: parseFloat(data.h), low: parseFloat(data.l), close: parseFloat(data.c), volume: parseFloat(data.v) }),
-    parseTicker: (data, currentSymbol, currentProvider) => ({ price: parseFloat(data.p), symbol: currentSymbol, provider: currentProvider })
-  }
+    }
 };
 
 export const calculateMA = (data: CandlestickData[], period: number): LineData[] => {

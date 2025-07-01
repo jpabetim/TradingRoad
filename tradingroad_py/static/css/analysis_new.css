@@ -1,0 +1,266 @@
+/* Estilos específicos para la nueva pantalla de análisis */
+
+.trading-analysis-container {
+    display: flex;
+    height: calc(100vh - 100px);
+    background-color: #0E1117;
+    color: #e0e0e0;
+}
+
+/* Panel lateral izquierdo */
+.sidebar-controls {
+    width: 300px;
+    padding: 15px;
+    background-color: #131722;
+    border-right: 1px solid #2a2e39;
+    display: flex;
+    flex-direction: column;
+}
+
+.analysis-actions-panel, .trading-assistant-panel {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #1c2030;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.analysis-actions-panel h3, .trading-assistant-panel h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #e0e0e0;
+    font-size: 16px;
+    border-bottom: 1px solid #2a2e39;
+    padding-bottom: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-button {
+    padding: 8px 12px;
+    background-color: #2a2e39;
+    border: none;
+    border-radius: 4px;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.action-button:hover {
+    background-color: #363c4e;
+}
+
+.action-button.blue {
+    background-color: #2962ff;
+}
+
+.action-button.blue:hover {
+    background-color: #1e54e7;
+}
+
+.action-button.purple {
+    background-color: #7b1fa2;
+}
+
+.action-button.purple:hover {
+    background-color: #6a1b9a;
+}
+
+/* Chat en el panel de asistente */
+.chat-container {
+    background-color: #131722;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-message {
+    padding: 8px 12px;
+    border-radius: 4px;
+    max-width: 90%;
+    word-break: break-word;
+}
+
+.chat-message.system {
+    background-color: #1c2030;
+    align-self: flex-start;
+}
+
+.chat-message.user {
+    background-color: #2962ff;
+    align-self: flex-end;
+}
+
+.chat-input-container {
+    display: flex;
+    margin-top: 10px;
+    gap: 8px;
+}
+
+#chatInput {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #2a2e39;
+    border-radius: 4px;
+    background-color: #131722;
+    color: #e0e0e0;
+}
+
+#sendBtn {
+    padding: 8px 12px;
+    background-color: #2962ff;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+#sendBtn:hover {
+    background-color: #1e54e7;
+}
+
+/* Área principal del gráfico */
+.main-chart-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0E1117;
+}
+
+.market-selector {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #131722;
+    border-bottom: 1px solid #2a2e39;
+}
+
+.market-selector select {
+    background-color: #1c2030;
+    color: #e0e0e0;
+    border: 1px solid #2a2e39;
+    padding: 5px 10px;
+    margin-right: 10px;
+    border-radius: 4px;
+}
+
+.timeframe-buttons {
+    display: flex;
+    gap: 5px;
+    margin-left: 15px;
+}
+
+.tf-btn {
+    padding: 5px 10px;
+    background-color: #1c2030;
+    border: 1px solid #2a2e39;
+    border-radius: 3px;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.tf-btn:hover {
+    background-color: #272b38;
+}
+
+.tf-btn.active {
+    background-color: #2962ff;
+    border-color: #2962ff;
+}
+
+.main-chart-container {
+    flex: 1;
+    position: relative;
+    min-height: 500px;  /* Asegurar una altura mínima */
+    width: 100%;
+    height: 100%;
+}
+
+/* Resultados de análisis */
+.analysis-result {
+    padding: 10px;
+}
+
+.analysis-result h4 {
+    margin-top: 0;
+    color: #e0e0e0;
+    border-bottom: 1px solid #2a2e39;
+    padding-bottom: 5px;
+}
+
+.trend {
+    padding: 5px 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.trend.alcista {
+    background-color: rgba(38, 166, 154, 0.2);
+    color: #26a69a;
+}
+
+.trend.bajista {
+    background-color: rgba(239, 83, 80, 0.2);
+    color: #ef5350;
+}
+
+.key-levels h5, .indicators h5, .recommendation h5 {
+    margin-bottom: 5px;
+    color: #9e9e9e;
+}
+
+.key-levels ul, .indicators ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.key-levels li, .indicators li {
+    margin-bottom: 5px;
+}
+
+.recommendation {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: rgba(41, 98, 255, 0.1);
+    border-left: 3px solid #2962ff;
+    border-radius: 4px;
+}
+
+/* Estados del chat */
+.loading-message, .success-message, .error-message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.loading-message {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+}
+
+.success-message {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.error-message {
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.typing {
+    font-style: italic;
+    color: #9e9e9e;
+}

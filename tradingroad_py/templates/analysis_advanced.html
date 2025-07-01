@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingRoad - Professional Trading Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tealstreet_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tealstreet_premium.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/debug_chart.js') }}"></script>
+</head>
+<body>
+    <!-- Estructura TealStreet Professional -->
+    <div class="tealstreet-layout">
+        <!-- Barra superior TealStreet Professional -->
+        <div class="tealstreet-topbar">
+            <div class="topbar-left">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/tradingroad-logo.png') }}" alt="TradingRoad" class="brand-logo">
+                </div>
+                
+                <!-- Selector de mercado y símbolo estilo TealStreet Professional -->
+                <div class="market-section">
+                    <div class="symbol-selector">
+                        <select class="exchange-select">
+                            <option value="binance">Binance</option>
+                            <option value="bybit">Bybit</option>
+                            <option value="coinbase">Coinbase</option>
+                            <option value="kraken">Kraken</option>
+                        </select>
+                        <div class="symbol-input-group">
+                            <input type="text" class="symbol-input" value="BTCUSDT" placeholder="Symbol">
+                            <button class="symbol-dropdown-btn"><i class="fas fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeframes estilo TealStreet Professional -->
+                <div class="timeframe-section">
+                    <button class="tf-btn" data-tf="1m">1m</button>
+                    <button class="tf-btn" data-tf="5m">5m</button>
+                    <button class="tf-btn" data-tf="15m">15m</button>
+                    <button class="tf-btn" data-tf="1h">1H</button>
+                    <button class="tf-btn active" data-tf="4h">4H</button>
+                    <button class="tf-btn" data-tf="1d">1D</button>
+                    <button class="tf-btn" data-tf="1w">1W</button>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Controles de indicadores y herramientas -->
+                <button class="topbar-btn" data-action="indicators">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Indicators</span>
+                </button>
+                
+                <button class="topbar-btn" data-action="drawing">
+                    <i class="fas fa-pencil-alt"></i>
+                    <span>Draw</span>
+                </button>
+                
+                <button class="topbar-btn" data-action="alerts">
+                    <i class="fas fa-bell"></i>
+                    <span>Alerts</span>
+                </button>
+                
+                <button class="topbar-btn" data-action="fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+                
+                <button class="topbar-btn" data-action="settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor principal -->
+        <div class="tealstreet-main">
+            <!-- Barra de información del símbolo -->
+            <div class="symbol-header">
+                <div class="symbol-info">
+                    <span class="symbol-name">BTCUSDT</span>
+                    <span class="exchange-tag">BINANCE</span>
+                    <div class="symbol-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">24h High</span>
+                            <span class="stat-value">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">24h Low</span>
+                            <span class="stat-value">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">24h Volume</span>
+                            <span class="stat-value">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="price-info">
+                    <span class="symbol-price">Loading...</span>
+                    <span class="symbol-change">--</span>
+                </div>
+            </div>
+
+            <!-- Contenedor del gráfico -->
+            <div class="chart-container">
+                <!-- Toolbar lateral TealStreet -->
+                <div class="chart-toolbar">
+                    <div class="tool-group">
+                        <button class="tool-btn" data-tool="cursor" title="Cursor">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="crosshair" title="Crosshair">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-tool="line" title="Trend Line">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="horizontal" title="Horizontal Line">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="vertical" title="Vertical Line">
+                            <i class="fas fa-arrows-alt-v"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="rectangle" title="Rectangle">
+                            <i class="far fa-square"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="fibonacci" title="Fibonacci">
+                            <i class="fas fa-wave-square"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-tool="text" title="Text">
+                            <i class="fas fa-font"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="arrow" title="Arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" data-tool="undo" title="Undo">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="tool-btn" data-tool="clear" title="Clear All">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área del gráfico principal -->
+                <div class="chart-area">
+                    <div id="tradingChart" class="main-chart" style="min-height: 500px; height: 500px;"></div>
+                    
+                    <!-- Indicadores activos -->
+                    <div class="active-indicators">
+                        <!-- Se llenarán dinámicamente -->
+                    </div>
+                    
+                    <!-- Controles de zoom -->
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" data-action="zoom-in" title="Zoom In">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="zoom-btn" data-action="zoom-out" title="Zoom Out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="zoom-btn" data-action="zoom-reset" title="Reset Zoom">
+                            <i class="fas fa-home"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Indicadores TealStreet Professional -->
+    <div class="modal-overlay"></div>
+    <div class="tealstreet-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Technical Indicators</h3>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Buscador de indicadores -->
+                <div class="indicator-search">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search indicators...">
+                    </div>
+                </div>
+
+                <!-- Categorías de indicadores -->
+                <div class="indicator-categories">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <button class="category-btn" data-category="trend">Trend</button>
+                    <button class="category-btn" data-category="momentum">Momentum</button>
+                    <button class="category-btn" data-category="volume">Volume</button>
+                    <button class="category-btn" data-category="volatility">Volatility</button>
+                    <button class="category-btn" data-category="support">Support/Resistance</button>
+                </div>
+
+                <!-- Grid de indicadores -->
+                <div class="indicators-grid">
+                    <!-- Moving Averages -->
+                    <div class="indicator-card" data-indicator="SMA" data-category="trend">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>Simple Moving Average</h4>
+                                <p>Smooth price action by averaging closing prices</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Period</label>
+                                <input type="number" class="setting-input" value="20" min="1" max="200">
+                            </div>
+                            <div class="setting-row">
+                                <label>Color</label>
+                                <input type="color" class="color-input" value="#2962FF">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMA -->
+                    <div class="indicator-card" data-indicator="EMA" data-category="trend">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>Exponential Moving Average</h4>
+                                <p>Gives more weight to recent price data</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Period</label>
+                                <input type="number" class="setting-input" value="20" min="1" max="200">
+                            </div>
+                            <div class="setting-row">
+                                <label>Color</label>
+                                <input type="color" class="color-input" value="#FF6D00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RSI -->
+                    <div class="indicator-card" data-indicator="RSI" data-category="momentum">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>Relative Strength Index</h4>
+                                <p>Momentum oscillator (0-100 range)</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Period</label>
+                                <input type="number" class="setting-input" value="14" min="1" max="100">
+                            </div>
+                            <div class="setting-row">
+                                <label>Overbought</label>
+                                <input type="number" class="setting-input" value="70" min="50" max="100">
+                            </div>
+                            <div class="setting-row">
+                                <label>Oversold</label>
+                                <input type="number" class="setting-input" value="30" min="0" max="50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MACD -->
+                    <div class="indicator-card" data-indicator="MACD" data-category="momentum">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>MACD</h4>
+                                <p>Moving Average Convergence Divergence</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Fast Period</label>
+                                <input type="number" class="setting-input" value="12" min="1" max="50">
+                            </div>
+                            <div class="setting-row">
+                                <label>Slow Period</label>
+                                <input type="number" class="setting-input" value="26" min="1" max="100">
+                            </div>
+                            <div class="setting-row">
+                                <label>Signal Period</label>
+                                <input type="number" class="setting-input" value="9" min="1" max="50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bollinger Bands -->
+                    <div class="indicator-card" data-indicator="BB" data-category="volatility">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>Bollinger Bands</h4>
+                                <p>Volatility bands around moving average</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Period</label>
+                                <input type="number" class="setting-input" value="20" min="1" max="100">
+                            </div>
+                            <div class="setting-row">
+                                <label>Std Dev</label>
+                                <input type="number" class="setting-input" value="2" min="0.1" max="5" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Volume -->
+                    <div class="indicator-card" data-indicator="VOLUME" data-category="volume">
+                        <div class="indicator-header">
+                            <div class="indicator-info">
+                                <h4>Volume</h4>
+                                <p>Trading volume bars</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="indicator-settings">
+                            <div class="setting-row">
+                                <label>Bull Color</label>
+                                <input type="color" class="color-input" value="#089981">
+                            </div>
+                            <div class="setting-row">
+                                <label>Bear Color</label>
+                                <input type="color" class="color-input" value="#F23645">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary modal-close">Cancel</button>
+                <button class="btn-primary" id="applyIndicators">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Eventos adicionales para la interfaz
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar modal con overlay
+            document.querySelector('.modal-overlay').addEventListener('click', function() {
+                if (window.tealStreetChart) {
+                    window.tealStreetChart.hideIndicatorsModal();
+                }
+            });
+            
+            // Cerrar modal con botón
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (window.tealStreetChart) {
+                        window.tealStreetChart.hideIndicatorsModal();
+                    }
+                });
+            });
+            
+            // Filtros de categorías
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.dataset.category;
+                    const cards = document.querySelectorAll('.indicator-card');
+                    
+                    cards.forEach(card => {
+                        if (category === 'all' || card.dataset.category === category) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Buscador de indicadores
+            document.querySelector('.search-input').addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const cards = document.querySelectorAll('.indicator-card');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('h4').textContent.toLowerCase();
+                    const description = card.querySelector('p').textContent.toLowerCase();
+                    
+                    if (title.includes(query) || description.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+                <button class="topbar-btn" id="indicatorsBtn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Indicators</span>
+                </button>
+                
+                <!-- Configuraciones -->
+                <button class="topbar-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+
+                <!-- Modo pantalla completa -->
+                <button class="topbar-btn">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenedor principal del gráfico TealStreet style -->
+        <div class="tealstreet-main">
+            <!-- Barra de información del símbolo -->
+            <div class="symbol-header">
+                <div class="symbol-info">
+                    <span class="symbol-name">BTCUSDT</span>
+                    <span class="exchange-tag">Binance</span>
+                </div>
+                <div class="price-info">
+                    <span class="current-price">$67,834.50</span>
+                    <span class="price-change positive">+1,234.50 (+1.85%)</span>
+                </div>
+                <div class="market-stats">
+                    <span class="stat-item">
+                        <span class="stat-label">Vol:</span>
+                        <span class="stat-value">1.2B</span>
+                    </span>
+                    <span class="stat-item">
+                        <span class="stat-label">High:</span>
+                        <span class="stat-value">68,245.30</span>
+                    </span>
+                    <span class="stat-item">
+                        <span class="stat-label">Low:</span>
+                        <span class="stat-value">66,123.80</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Área del gráfico principal -->
+            <div class="chart-container">
+                <!-- Toolbar izquierdo con herramientas de dibujo -->
+                <div class="chart-toolbar">
+                    <div class="tool-group">
+                        <button class="tool-btn active" title="Cursor">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </button>
+                        <button class="tool-btn" title="Crosshair">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Trend Line">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="tool-btn" title="Horizontal Line">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="tool-btn" title="Vertical Line">
+                            <i class="fas fa-grip-lines-vertical"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Rectangle">
+                            <i class="far fa-square"></i>
+                        </button>
+                        <button class="tool-btn" title="Fibonacci">
+                            <i class="fas fa-wave-square"></i>
+                        </button>
+                    </div>
+
+                    <div class="tool-group">
+                        <button class="tool-btn" title="Text">
+                            <i class="fas fa-font"></i>
+                        </button>
+                        <button class="tool-btn" title="Brush">
+                            <i class="fas fa-paint-brush"></i>
+                        </button>
+                        <button class="tool-btn" title="Eraser">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- El gráfico principal -->
+                <div class="chart-area">
+                    <div id="tradingChartSecondary" class="main-chart" style="display: none;"></div>
+                    
+                    <!-- Controles de zoom -->
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" title="Zoom In">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="zoom-btn" title="Zoom Out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="zoom-btn" title="Reset Zoom">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+
+                    <!-- Indicadores activos -->
+                    <div class="active-indicators">
+                        <span class="indicator-chip">RSI(14)</span>
+                        <span class="indicator-chip">MACD(12,26,9)</span>
+                        <span class="indicator-chip">EMA(20)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de indicadores estilo TealStreet -->
+        <div id="indicatorsModal" class="tealstreet-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Technical Indicators</h3>
+                    <button class="modal-close" id="closeIndicators">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Buscador de indicadores -->
+                    <div class="indicator-search">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" placeholder="Search indicators..." class="search-input">
+                        </div>
+                    </div>
+
+                    <!-- Categorías de indicadores -->
+                    <div class="indicator-categories">
+                        <button class="category-btn active" data-category="all">All</button>
+                        <button class="category-btn" data-category="trend">Trend</button>
+                        <button class="category-btn" data-category="momentum">Momentum</button>
+                        <button class="category-btn" data-category="volatility">Volatility</button>
+                        <button class="category-btn" data-category="volume">Volume</button>
+                    </div>
+
+                    <!-- Grid de indicadores -->
+                    <div class="indicators-grid">
+                        <!-- RSI -->
+                        <div class="indicator-card" data-indicator="rsi">
+                            <div class="indicator-header">
+                                <div class="indicator-info">
+                                    <h4 class="indicator-name">RSI</h4>
+                                    <p class="indicator-desc">Relative Strength Index</p>
+                                </div>
+                                <div class="indicator-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="rsi-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="indicator-settings">
+                                <div class="setting-row">
+                                    <label>Period:</label>
+                                    <input type="number" value="14" min="1" max="100" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Overbought:</label>
+                                    <input type="number" value="70" min="50" max="90" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Oversold:</label>
+                                    <input type="number" value="30" min="10" max="50" class="setting-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MACD -->
+                        <div class="indicator-card" data-indicator="macd">
+                            <div class="indicator-header">
+                                <div class="indicator-info">
+                                    <h4 class="indicator-name">MACD</h4>
+                                    <p class="indicator-desc">Moving Average Convergence Divergence</p>
+                                </div>
+                                <div class="indicator-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="macd-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="indicator-settings">
+                                <div class="setting-row">
+                                    <label>Fast Period:</label>
+                                    <input type="number" value="12" min="1" max="50" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Slow Period:</label>
+                                    <input type="number" value="26" min="1" max="100" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Signal Period:</label>
+                                    <input type="number" value="9" min="1" max="50" class="setting-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bollinger Bands -->
+                        <div class="indicator-card" data-indicator="bb">
+                            <div class="indicator-header">
+                                <div class="indicator-info">
+                                    <h4 class="indicator-name">Bollinger Bands</h4>
+                                    <p class="indicator-desc">Volatility indicator</p>
+                                </div>
+                                <div class="indicator-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="bb-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="indicator-settings">
+                                <div class="setting-row">
+                                    <label>Period:</label>
+                                    <input type="number" value="20" min="5" max="50" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Std Dev:</label>
+                                    <input type="number" value="2" min="1" max="3" step="0.1" class="setting-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- EMA -->
+                        <div class="indicator-card" data-indicator="ema">
+                            <div class="indicator-header">
+                                <div class="indicator-info">
+                                    <h4 class="indicator-name">EMA</h4>
+                                    <p class="indicator-desc">Exponential Moving Average</p>
+                                </div>
+                                <div class="indicator-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="ema-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="indicator-settings">
+                                <div class="setting-row">
+                                    <label>Period:</label>
+                                    <input type="number" value="20" min="1" max="200" class="setting-input">
+                                </div>
+                                <div class="setting-row">
+                                    <label>Color:</label>
+                                    <input type="color" value="#2962FF" class="color-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="resetIndicators">Reset All</button>
+                    <button class="btn-primary" id="applyIndicators">Apply Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay para el modal -->
+        <div id="modalOverlay" class="modal-overlay"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/tealstreet.js') }}"></script>
+</body>
+</html>
+            <button class="icon-button"><i class="fas fa-expand"></i></button>
+            <button class="icon-button"><i class="fas fa-cog"></i></button>
+            <button id="aiAssistant" class="icon-button purple"><i class="fas fa-robot"></i></button>
+        </div>
+    </div>
+    
+    <!-- Panel lateral plegable - Controles de Mercado -->
+    <div class="sidebar-controls collapsed" id="sidebar-controls">
+        <div class="market-controls" id="market-controls">
+            <h2>Controles de Mercado</h2>
+            <div class="control-group">
+                <label>Fuente de Datos</label>
+                <select id="dataSourceFull" class="market-select">
+                    <option value="binance">Binance</option>
+                    <option value="coinbase">Coinbase</option>
+                    <option value="kraken">Kraken</option>
+                    <option value="bybit">Bybit</option>
+                    <option value="kucoin">KuCoin</option>
+                    <option value="bingx">BingX</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Par de Trading / Símbolo</label>
+                <div class="symbol-search-container">
+                    <input type="text" id="symbolSearchFull" class="symbol-input" placeholder="BTC/USDT" autocomplete="off">
+                    <button class="favorite-button" id="favorite-toggle">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <div id="symbolResults" class="symbol-results"></div>
+                    <div class="favorite-symbols" id="favoriteSymbols">
+                        <div class="favorite-header">Favoritos</div>
+                        <div class="favorite-list" id="favoriteList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Temporalidad</label>
+                <select id="timeframeSelect" class="timeframe-selector">
+                    <option value="30s">30 segundos</option>
+                    <option value="1m">1 minuto</option>
+                    <option value="5m">5 minutos</option>
+                    <option value="15m">15 minutos</option>
+                    <option value="30m">30 minutos</option>
+                    <option value="1h" selected>1 hora</option>
+                    <option value="4h">4 horas</option>
+                    <option value="1d">1 día</option>
+                    <option value="1w">1 semana</option>
+                    <option value="1M">1 mes</option>
+                </select>
+            </div>
+            
+            <!-- Sección de Indicadores con acordeón -->
+            <div class="control-group">
+                <label>Indicadores</label>
+                <div class="indicators-accordion">
+                    <div class="indicator-accordion-item">
+                        <div class="indicator-header" data-indicator="movingAverages">
+                            <span>Medias Móviles</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="indicator-content" id="moving-averages-settings">
+                            <div class="active-averages" id="active-averages">
+                                <!-- Aquí se mostrarán las medias activas -->
+                            </div>
+                            <div class="indicator-params">
+                                <div class="ma-type-group">
+                                    <label>Tipo:</label>
+                                    <select id="ma-type">
+                                        <option value="ema">EMA</option>
+                                        <option value="sma">SMA</option>
+                                    </select>
+                                </div>
+                                <div class="ma-period-group">
+                                    <label>Período:</label>
+                                    <input type="number" id="ma-period" value="20" min="1" max="500">
+                                </div>
+                                <div class="ma-color-group">
+                                    <label>Color:</label>
+                                    <input type="color" id="ma-color" value="#FFFFFF">
+                                </div>
+                                <div class="ma-width-group">
+                                    <label>Grosor:</label>
+                                    <input type="range" id="ma-width" min="1" max="4" value="2" step="0.5">
+                                </div>
+                                <div class="ma-opacity-group">
+                                    <label>Opacidad:</label>
+                                    <input type="range" id="ma-opacity" min="0.1" max="1" value="0.7" step="0.1">
+                                </div>
+                            </div>
+                            <div class="indicator-actions">
+                                <button class="add-ma" id="add-ma">Añadir Media</button>
+                                <button class="reset-default-mas" id="reset-default-mas">Restaurar Predeterminadas</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="indicator-accordion-item">
+                        <div class="indicator-header" data-indicator="bollinger">
+                            <span>Bollinger Bands</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="indicator-content" id="bollinger-settings">
+                            <div class="indicator-params">
+                                <label>Período:</label>
+                                <input type="number" id="bollinger-period" value="20" min="1" max="200">
+                                <label>Desviaciones:</label>
+                                <input type="number" id="bollinger-deviations" value="2" min="0.1" max="5" step="0.1">
+                            </div>
+                            <div class="indicator-actions">
+                                <button class="apply-indicator" data-indicator="bollinger">Aplicar</button>
+                                <button class="remove-indicator" data-indicator="bollinger">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="indicator-accordion-item">
+                        <div class="indicator-header" data-indicator="rsi">
+                            <span>RSI</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="indicator-content" id="rsi-settings">
+                            <div class="indicator-params">
+                                <div class="rsi-param-group">
+                                    <label>Período:</label>
+                                    <input type="number" id="rsi-period" value="14" min="1" max="50">
+                                </div>
+                                <div class="rsi-levels-group">
+                                    <label>Sobrecompra:</label>
+                                    <input type="number" id="rsi-overbought" value="80" min="50" max="100">
+                                </div>
+                                <div class="rsi-levels-group">
+                                    <label>Sobreventa:</label>
+                                    <input type="number" id="rsi-oversold" value="20" min="0" max="50">
+                                </div>
+                                <div class="rsi-levels-group">
+                                    <label>Línea media:</label>
+                                    <input type="number" id="rsi-midline" value="50" readonly>
+                                </div>
+                                <div class="rsi-style-group">
+                                    <label>Línea RSI:</label>
+                                    <div class="style-controls">
+                                        <input type="color" id="rsi-color" value="#9C27B0">
+                                        <input type="range" id="rsi-width" min="1" max="3" value="2" step="0.5">
+                                    </div>
+                                </div>
+                                <div class="rsi-style-group">
+                                    <label>Opacidad:</label>
+                                    <div class="style-controls">
+                                        <input type="range" id="rsi-opacity" min="0.1" max="1" value="0.8" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="rsi-toggle-group">
+                                    <label>Opciones:</label>
+                                    <div class="toggle-controls">
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="rsi-show-overbought" checked>
+                                            Mostrar sobrecompra (80)
+                                        </label>
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="rsi-show-oversold" checked>
+                                            Mostrar sobreventa (20)
+                                        </label>
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="rsi-show-midline" checked>
+                                            Mostrar línea media (50)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="indicator-actions">
+                                <button class="toggle-indicator" data-indicator="rsi" id="toggle-rsi">
+                                    <span id="rsi-toggle-status">Activar</span>
+                                </button>
+                                <button class="apply-indicator" data-indicator="rsi">Aplicar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="indicator-accordion-item">
+                        <div class="indicator-header" data-indicator="macd">
+                            <span>MACD</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="indicator-content" id="macd-settings">
+                            <div class="indicator-params">
+                                <label>Rápido:</label>
+                                <input type="number" id="macd-fast" value="12" min="1" max="50">
+                                <label>Lento:</label>
+                                <input type="number" id="macd-slow" value="26" min="1" max="100">
+                                <label>Señal:</label>
+                                <input type="number" id="macd-signal" value="9" min="1" max="50">
+                            </div>
+                            <div class="indicator-actions">
+                                <button class="apply-indicator" data-indicator="macd">Aplicar</button>
+                                <button class="remove-indicator" data-indicator="macd">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="indicator-accordion-item">
+                        <div class="indicator-header" data-indicator="volume">
+                            <span>Volumen</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="indicator-content" id="volume-settings">
+                            <div class="indicator-params">
+                                <div class="volume-toggle-group">
+                                    <label>Opciones:</label>
+                                    <div class="toggle-controls">
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="volume-show-ma" checked>
+                                            Mostrar media móvil
+                                        </label>
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="volume-top-position">
+                                            Mostrar arriba del gráfico
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="volume-style-group">
+                                    <label>Opacidad:</label>
+                                    <div class="style-controls">
+                                        <input type="range" id="volume-opacity" min="0.1" max="1" value="0.7" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="volume-ma-style-group">
+                                    <label>Media Móvil:</label>
+                                    <div class="style-controls">
+                                        <label>Color:</label>
+                                        <input type="color" id="volume-ma-color" value="#FF9800">
+                                        <label>Período:</label>
+                                        <input type="number" id="volume-ma-period" value="55" min="5" max="200">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="indicator-actions">
+                                <button class="toggle-indicator" data-indicator="volume" id="toggle-volume">
+                                    <span id="volume-toggle-status">Activar</span>
+                                </button>
+                                <button class="apply-indicator" data-indicator="volume">Aplicar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group action-buttons">
+                <button id="hideControls" class="action-button">Ocultar</button>
+                <button id="aiAnalysis" class="action-button blue section-analysis">Análisis IA</button>
+                <button id="aiAssistant" class="action-button purple">Asistente IA</button>
+                <button id="toggleTheme" class="action-button">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel de IA (solo visible en sección Análisis) -->
+        <div class="ai-panel" id="ai-panel">
+            <h2>Panel de IA</h2>
+            <p class="ai-instruction">Selecciona "Análisis IA" para un análisis técnico o "Asistente IA" para chatear.</p>
+            <div id="ai-content" class="ai-content">
+                <!-- Contenido del análisis o chat aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico principal estilo TealStreet -->
+    <div class="main-chart-container" id="tradingViewContainer">
+        <!-- Barra de información del símbolo al estilo TealStreet -->
+        <div class="symbol-info-bar">
+            <div class="symbol-info-group">
+                <div id="chart-symbol-pair" class="symbol-name">BTCUSDT · <span id="chart-timeframe">1H</span></div>
+                <div class="symbol-exchange" id="chart-exchange">BYBIT</div>
+            </div>
+            <div class="price-info-group">
+                <div id="chart-price-open" class="price-label">O <span>107,350.0</span></div>
+                <div id="chart-price-high" class="price-label">H <span>107,675.1</span></div>
+                <div id="chart-price-low" class="price-label">L <span>107,335.4</span></div>
+                <div id="chart-price" class="price-label">C <span>107,630.0</span></div>
+                <div id="chart-change" class="price-change positive">+280.0 (+0.26%)</div>
+            </div>
+            <div class="volume-info">
+                <span class="volume-label">Volumen</span>
+                <span id="chart-volume-value" class="volume-value">1.888K</span>
+            </div>
+            <div class="countdown-container">
+                <span id="chart-countdown" class="countdown-timer">01:10</span>
+            </div>
+        </div>
+        
+        <!-- Herramientas de dibujo al estilo TealStreet -->
+        <div class="drawing-tools">
+            <button class="tool-button" data-tool="crosshair"><i class="fas fa-crosshairs"></i></button>
+            <button class="tool-button" data-tool="line"><i class="fas fa-chart-line"></i></button>
+            <button class="tool-button" data-tool="horizontal"><i class="fas fa-grip-lines"></i></button>
+            <button class="tool-button" data-tool="vertical"><i class="fas fa-grip-lines-vertical"></i></button>
+            <button class="tool-button" data-tool="rectangle"><i class="far fa-square"></i></button>
+            <button class="tool-button" data-tool="fibonacci"><i class="fas fa-project-diagram"></i></button>
+            <button class="tool-button" data-tool="text"><i class="fas fa-font"></i></button>
+            <button class="tool-button" data-tool="brush"><i class="fas fa-paint-brush"></i></button>
+        </div>
+        
+        <!-- Indicadores activos -->
+        <div class="active-indicators-bar">
+            <span id="active-indicators-list">EMA12, EMA20, SMA50, SMA200</span>
+        </div>
+        
+        <!-- Zona horaria selector -->
+        <div class="timezone-selector">
+            <select id="timezone-select" class="timezone-select">
+                <option value="UTC">UTC</option>
+                <option value="UTC+1">UTC+1</option>
+                <option value="UTC+2">UTC+2</option>
+                <option value="UTC-5">EST</option>
+                <option value="UTC-4">EDT</option>
+            </select>
+        </div>
+        
+        <!-- Panel de zoom del gráfico -->
+        <div class="chart-zoom-controls">
+            <button class="zoom-button" data-zoom="in"><i class="fas fa-search-plus"></i></button>
+            <button class="zoom-button" data-zoom="out"><i class="fas fa-search-minus"></i></button>
+            <button class="zoom-button" data-zoom="reset"><i class="fas fa-expand-arrows-alt"></i></button>
+        </div>
+        
+        <!-- Indicador de máximos y mínimos discretos -->
+        <div class="price-markers">
+            <div class="price-marker max-price" id="chart-max-price-marker">108272</div>
+            <div class="price-marker min-price" id="chart-min-price-marker">98200</div>
+        </div>
+        <div class="chart-loading" style="display: none;">
+            <div class="spinner"></div>
+            <div>Cargando datos...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Eventos adicionales para la interfaz
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar modal con overlay
+            document.querySelector('.modal-overlay').addEventListener('click', function() {
+                if (window.tealStreetChart) {
+                    window.tealStreetChart.hideIndicatorsModal();
+                }
+            });
+            
+            // Cerrar modal con botón
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (window.tealStreetChart) {
+                        window.tealStreetChart.hideIndicatorsModal();
+                    }
+                });
+            });
+            
+            // Filtros de categorías
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.dataset.category;
+                    const cards = document.querySelectorAll('.indicator-card');
+                    
+                    cards.forEach(card => {
+                        if (category === 'all' || card.dataset.category === category) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Buscador de indicadores
+            document.querySelector('.search-input').addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const cards = document.querySelectorAll('.indicator-card');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('h4').textContent.toLowerCase();
+                    const description = card.querySelector('p').textContent.toLowerCase();
+                    
+                    if (title.includes(query) || description.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+<script src="{{ url_for('static', filename='js/indicators.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chart_elements.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tealstreet_pro.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis_advanced.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar TealStreet Pro
+    window.tealStreetPro = new TealStreetPro();
+    
+    // Variables globales (para compatibilidad con código legacy)
+    window.chart = null;
+    let candleSeries;
+    let volumeSeries;
+    let rsiSeries;
+    let macdSeries;
+    let currentSource = 'binance';
+    let currentSymbol = 'BTC/USDT';
+    let currentTimeframe = '1h';
+    let marketData = [];
+    
+    // Inicializar el gráfico
+    const chartContainer = document.getElementById('tradingViewContainer');
+    
+    // Obtener la zona horaria seleccionada
+    const timezoneSelect = document.getElementById('timezone-select');
+    const selectedTimezone = timezoneSelect ? timezoneSelect.value : 'UTC';
+    
+    // Configuración del gráfico con estilo TradingView
+    chart = LightweightCharts.createChart(chartContainer, {
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+        layout: {
+            background: { type: 'solid', color: '#131722' },
+            textColor: '#d9d9d9',
+            fontSize: 12,
+            fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif",
+        },
+        grid: {
+            vertLines: { color: '#1e222d' },
+            horzLines: { color: '#1e222d' },
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+            vertLine: {
+                color: 'rgba(224, 227, 235, 0.1)',
+                width: 1,
+                style: 0,
+                labelBackgroundColor: '#9B7DFF',
+            },
+            horzLine: {
+                color: 'rgba(224, 227, 235, 0.1)',
+                width: 1,
+                style: 0,
+                labelBackgroundColor: '#9B7DFF',
+            },
+        },
+        rightPriceScale: {
+            borderColor: '#1e222d',
+            scaleMargins: {
+                top: 0.1,
+                bottom: 0.2,
+            },
+        },
+        timeScale: {
+            borderColor: '#1e222d',
+            timeVisible: true,
+            secondsVisible: false,
+        },
+        watermark: {
+            color: 'rgba(255, 255, 255, 0.1)',
+            visible: true,
+            text: 'TradingRoad',
+            fontSize: 42,
+            horzAlign: 'center',
+            vertAlign: 'center',
+        },
+    });
+
+    // Crear serie de velas
+    candleSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderVisible: false,
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+    });
+    
+    // Función para calcular y añadir indicadores
+    // Lista para mantener todas las medias móviles activas
+    let movingAverages = [];
+    
+    // Configuración predeterminada para medias móviles
+    const defaultMAs = [
+        { type: 'ema', period: 12, color: '#00FF00', width: 2, opacity: 0.8 }, // EMA 12 en verde
+        { type: 'ema', period: 20, color: '#FFFFFF', width: 2, opacity: 0.8 }, // EMA 20 en blanco
+        { type: 'sma', period: 50, color: '#FF69B4', width: 2, opacity: 0.8 }, // SMA 50 en fucsia claro
+        { type: 'sma', period: 200, color: '#FF0000', width: 2, opacity: 0.8 } // SMA 200 en rojo
+    ];
+
+    function addIndicator(type, params = {}) {
+        switch(type) {
+            case 'movingAverage':
+                const maType = params.type || 'ema';
+                const period = params.period || 20;
+                const color = params.color || '#FFFFFF';
+                const width = params.width || 2;
+                const opacity = params.opacity || 0.8;
+                const id = `${maType}-${period}`;
+                
+                // Verificar si ya existe esta media móvil
+                const existingMA = movingAverages.find(ma => ma.id === id);
+                if (existingMA) {
+                    chart.removeSeries(existingMA.series);
+                    movingAverages = movingAverages.filter(ma => ma.id !== id);
+                }
+                
+                // Crear la nueva serie
+                const maColor = color + Math.round(opacity * 255).toString(16).padStart(2, '0');
+                const maSeries = chart.addLineSeries({
+                    color: maColor,
+                    lineWidth: width,
+                    priceScaleId: 'right',
+                    title: `${maType.toUpperCase()} ${period}`
+                });
+                
+                // Calcular datos según el tipo
+                let maData;
+                if (maType === 'ema') {
+                    maData = calculateEMA(marketData, period);
+                } else {
+                    maData = calculateSMA(marketData, period);
+                }
+                
+                maSeries.setData(maData);
+                
+                // Guardar la media móvil
+                movingAverages.push({
+                    id,
+                    type: maType,
+                    period,
+                    color,
+                    width,
+                    opacity,
+                    series: maSeries
+                });
+                
+                // Actualizar la lista de medias activas en la UI
+                updateActiveMAsList();
+                updateActiveIndicators();
+                break;
+                
+            case 'bollinger':
+                const bollingerPeriod = params.period || 20;
+                const bollingerDevs = params.deviations || 2;
+                
+                // Eliminar bandas existentes
+                if (indicators.bollingerUpper) {
+                    chart.removeSeries(indicators.bollingerUpper);
+                }
+                if (indicators.bollingerMiddle) {
+                    chart.removeSeries(indicators.bollingerMiddle);
+                }
+                if (indicators.bollingerLower) {
+                    chart.removeSeries(indicators.bollingerLower);
+                }
+                
+                // Crear nuevas bandas
+                indicators.bollingerUpper = chart.addLineSeries({
+                    color: 'rgba(76, 175, 80, 0.7)',
+                    lineWidth: 1,
+                    priceScaleId: 'right',
+                });
+                
+                indicators.bollingerMiddle = chart.addLineSeries({
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    lineWidth: 1,
+                    priceScaleId: 'right',
+                });
+                
+                indicators.bollingerLower = chart.addLineSeries({
+                    color: 'rgba(76, 175, 80, 0.7)',
+                    lineWidth: 1,
+                    priceScaleId: 'right',
+                });
+                
+                // Calcular bandas de Bollinger
+                const bollinger = calculateBollinger(marketData, bollingerPeriod, bollingerDevs);
+                indicators.bollingerUpper.setData(bollinger.upper);
+                indicators.bollingerMiddle.setData(bollinger.middle);
+                indicators.bollingerLower.setData(bollinger.lower);
+                updateActiveIndicators();
+                break;
+                
+            case 'rsi':
+                const rsiPeriod = params.period || 14;
+                const overbought = params.overbought || 80;
+                const oversold = params.oversold || 20;
+                const showOverbought = params.showOverbought !== undefined ? params.showOverbought : true;
+                const showOversold = params.showOversold !== undefined ? params.showOversold : true; 
+                const showMidline = params.showMidline !== undefined ? params.showMidline : true;
+                const rsiColor = params.color || '#9C27B0';
+                const rsiWidth = params.width || 2;
+                
+                // Crear un nuevo pane para el RSI si no existe
+                if (!indicators.rsiPane) {
+                    indicators.rsiPane = chart.addPane({
+                        height: 120,
+                    });
+                }
+                
+                // Eliminar series existentes si las hay
+                if (indicators.rsi) {
+                    indicators.rsiPane.removeSeries(indicators.rsi);
+                }
+                if (indicators.rsiOverbought) {
+                    indicators.rsiPane.removeSeries(indicators.rsiOverbought);
+                }
+                if (indicators.rsiOversold) {
+                    indicators.rsiPane.removeSeries(indicators.rsiOversold);
+                }
+                if (indicators.rsiMidline) {
+                    indicators.rsiPane.removeSeries(indicators.rsiMidline);
+                }
+                
+                // Crear la serie RSI principal
+                indicators.rsi = indicators.rsiPane.addLineSeries({
+                    color: rsiColor,
+                    lineWidth: rsiWidth,
+                    priceFormat: {
+                        type: 'custom',
+                        minMove: 0.01,
+                        formatter: value => value.toFixed(2),
+                    },
+                    title: 'RSI (' + rsiPeriod + ')',
+                });
+                
+                // Calcular y mostrar el RSI
+                const rsiData = calculateRSI(marketData, rsiPeriod);
+                indicators.rsi.setData(rsiData);
+                
+                // Añadir línea de sobrecompra (nivel 80) con línea continua gris
+                if (showOverbought) {
+                    indicators.rsiOverbought = indicators.rsiPane.addLineSeries({
+                        color: 'rgba(128, 128, 128, 0.8)',
+                        lineWidth: 1,
+                        lineStyle: 0, // Línea continua
+                        lastValueVisible: false,
+                    });
+                    
+                    indicators.rsiOverbought.setData([
+                        { time: marketData[0].time, value: overbought },
+                        { time: marketData[marketData.length - 1].time, value: overbought }
+                    ]);
+                }
+                
+                // Añadir línea de sobreventa (nivel 20) con línea continua gris
+                if (showOversold) {
+                    indicators.rsiOversold = indicators.rsiPane.addLineSeries({
+                        color: 'rgba(128, 128, 128, 0.8)',
+                        lineWidth: 1,
+                        lineStyle: 0, // Línea continua
+                        lastValueVisible: false,
+                    });
+                    
+                    indicators.rsiOversold.setData([
+                        { time: marketData[0].time, value: oversold },
+                        { time: marketData[marketData.length - 1].time, value: oversold }
+                    ]);
+                }
+                
+                // Añadir línea del nivel 50 con línea discontinua gris claro
+                if (showMidline) {
+                    indicators.rsiMidline = indicators.rsiPane.addLineSeries({
+                        color: 'rgba(169, 169, 169, 0.5)',
+                        lineWidth: 1,
+                        lineStyle: 1, // Línea discontinua
+                        lastValueVisible: false,
+                    });
+                    
+                    indicators.rsiMidline.setData([
+                        { time: marketData[0].time, value: 50 },
+                        { time: marketData[marketData.length - 1].time, value: 50 }
+                    ]);
+                }
+                
+                updateActiveIndicators();
+                break;
+                
+            case 'macd':
+                const fastPeriod = params.fast || 12;
+                const slowPeriod = params.slow || 26;
+                const signalPeriod = params.signal || 9;
+                
+                // Crear un nuevo pane para el MACD
+                if (!indicators.macdPane) {
+                    indicators.macdPane = chart.addPane({
+                        height: 120,
+                    });
+                }
+                
+                if (indicators.macdLine) {
+                    indicators.macdPane.removeSeries(indicators.macdLine);
+                }
+                
+                if (indicators.signalLine) {
+                    indicators.macdPane.removeSeries(indicators.signalLine);
+                }
+                
+                if (indicators.histogramSeries) {
+                    indicators.macdPane.removeSeries(indicators.histogramSeries);
+                }
+                
+                // Crear las series del MACD
+                indicators.macdLine = indicators.macdPane.addLineSeries({
+                    color: '#2196F3',
+                    lineWidth: 2,
+                    title: 'MACD',
+                });
+                
+                indicators.signalLine = indicators.macdPane.addLineSeries({
+                    color: '#FF9800',
+                    lineWidth: 1,
+                    title: 'Señal',
+                });
+                
+                indicators.histogramSeries = indicators.macdPane.addHistogramSeries({
+                    color: '#26a69a',
+                    priceFormat: {
+                        type: 'custom',
+                        minMove: 0.01,
+                        formatter: value => value.toFixed(2),
+                    },
+                    title: 'Histograma',
+                });
+                
+                // Calcular MACD
+                const macd = calculateMACD(marketData, fastPeriod, slowPeriod, signalPeriod);
+                
+                indicators.macdLine.setData(macd.macdLine);
+                indicators.signalLine.setData(macd.signalLine);
+                indicators.histogramSeries.setData(macd.histogram);
+                updateActiveIndicators();
+                break;
+                
+            case 'volume':
+                const showMA = params.showMA !== undefined ? params.showMA : true;
+                const topPosition = params.topPosition !== undefined ? params.topPosition : false;
+                const volumeOpacity = params.opacity || 0.7;
+                const maPeriod = params.maPeriod || 55;
+                const volumeMaColor = params.maColor || '#FF9800'; // Renamed from maColor to volumeMaColor to avoid duplicate declaration
+                
+                // Eliminar el panel de volumen existente si hay uno
+                if (indicators.volumePane) {
+                    chart.removePaneByName('volumePane');
+                    indicators.volumePane = null;
+                    indicators.volume = null;
+                    indicators.volumeMA = null;
+                }
+                
+                // Crear un nuevo panel para el volumen
+                let paneOptions = {
+                    name: 'volumePane',
+                    height: 100
+                };
+                
+                // Si se debe mostrar en la parte superior, cambiar el orden
+                if (topPosition) {
+                    // Primero creamos el pane de volumen
+                    indicators.volumePane = chart.addPane(paneOptions);
+                    
+                    // Luego movemos todos los otros panes
+                    if (indicators.rsiPane) {
+                        chart.movePaneToPosition(indicators.rsiPane, 1);
+                    }
+                    if (indicators.macdPane) {
+                        chart.movePaneToPosition(indicators.macdPane, indicators.rsiPane ? 2 : 1);
+                    }
+                } else {
+                    // Añadirlo normalmente al final
+                    indicators.volumePane = chart.addPane(paneOptions);
+                }
+                
+                // Añadir serie de volumen
+                indicators.volume = indicators.volumePane.addHistogramSeries({
+                    color: '#26a69a',
+                    priceFormat: {
+                        type: 'volume',
+                    },
+                    title: 'Volumen',
+                    opacity: volumeOpacity
+                });
+                
+                // Preparar datos de volumen
+                const volumeData = marketData.map(d => ({
+                    time: d.time,
+                    value: d.volume,
+                    color: d.close >= d.open ? '#26a69a' : '#ef5350',
+                }));
+                
+                indicators.volume.setData(volumeData);
+                
+                // Añadir media móvil del volumen si está activada
+                if (showMA) {
+                    // Calcular MA del volumen
+                    const volumeValues = marketData.map(d => d.volume);
+                    const volumeMA = calculateSimpleMA(volumeValues, maPeriod);
+                    
+                    // Crear la serie para la media móvil
+                    indicators.volumeMA = indicators.volumePane.addLineSeries({
+                        color: volumeMaColor,
+                        lineWidth: 2,
+                        title: `Vol MA (${maPeriod})`,
+                        priceScaleId: 'right'
+                    });
+                    
+                    // Preparar datos para la MA
+                    const volumeMAData = volumeMA.map((value, index) => ({
+                        time: marketData[index + maPeriod - 1].time,
+                        value: value
+                    }));
+                    
+                    indicators.volumeMA.setData(volumeMAData);
+                }
+                
+                updateActiveIndicators();
+                break;
+        }
+    }
+    
+    function updateActiveIndicators() {
+        const activeIndicators = Object.keys(indicators).filter(key => 
+            !['rsiPane', 'macdPane', 'volumePane', 'rsiOverbought', 'rsiOversold', 'rsiMidline', 'histogramSeries', 'volumeMA'].includes(key)
+        );
+        
+        // Añadir las medias móviles activas
+        const maNames = movingAverages.map(ma => `${ma.type.toUpperCase()}${ma.period}`);
+        
+        let allIndicators = [...activeIndicators, ...maNames];
+        
+        let indicatorText = allIndicators.length > 0 
+            ? 'Indicadores: ' + allIndicators.join(', ')
+            : 'Indicadores: Ninguno';
+            
+        document.getElementById('chart-active-indicators').textContent = indicatorText;
+    }
+    
+    function updateActiveMAsList() {
+        const container = document.getElementById('active-averages');
+        container.innerHTML = '';
+        
+        // Si hay medias móviles activas, mostrarlas
+        if (movingAverages.length > 0) {
+            const list = document.createElement('div');
+            list.className = 'ma-list';
+            
+            movingAverages.forEach(ma => {
+                const item = document.createElement('div');
+                item.className = 'ma-item';
+                item.innerHTML = `
+                    <span class="ma-color" style="background-color: ${ma.color}"></span>
+                    <span class="ma-info">${ma.type.toUpperCase()} ${ma.period}</span>
+                    <button class="ma-remove" data-id="${ma.id}">×</button>
+                `;
+                list.appendChild(item);
+            });
+            
+            container.appendChild(list);
+            
+            // Añadir event listeners para los botones de eliminar
+            document.querySelectorAll('.ma-remove').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const maId = this.getAttribute('data-id');
+                    const ma = movingAverages.find(ma => ma.id === maId);
+                    if (ma) {
+                        chart.removeSeries(ma.series);
+                        movingAverages = movingAverages.filter(m => m.id !== maId);
+                        updateActiveMAsList();
+                        updateActiveIndicators();
+                    }
+                });
+            });
+        } else {
+            container.innerHTML = '<p>No hay medias móviles activas</p>';
+        }
+    }
+    
+    function calculateSimpleMA(values, period) {
+        const result = [];
+        for (let i = period - 1; i < values.length; i++) {
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+                sum += values[i - j];
+            }
+            result.push(sum / period);
+        }
+        return result;
+    }
+    
+    // Funciones para calcular los indicadores técnicos
+    function calculateSMA(data, period) {
+        const result = [];
+        for (let i = period - 1; i < data.length; i++) {
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+                sum += data[i - j].close;
+            }
+            result.push({
+                time: data[i].time,
+                value: sum / period
+            });
+        }
+        return result;
+    }
+    
+    function calculateEMA(data, period) {
+        const result = [];
+        const k = 2 / (period + 1);
+        
+        // Primera EMA es un SMA
+        let ema = data.slice(0, period).reduce((sum, d) => sum + d.close, 0) / period;
+        
+        for (let i = period - 1; i < data.length; i++) {
+            if (i === period - 1) {
+                result.push({
+                    time: data[i].time,
+                    value: ema
+                });
+                continue;
+            }
+            
+            ema = data[i].close * k + ema * (1 - k);
+            result.push({
+                time: data[i].time,
+                value: ema
+            });
+        }
+        return result;
+    }
+    
+    function calculateBollinger(data, period, deviations) {
+        const upper = [];
+        const middle = [];
+        const lower = [];
+        
+        // Calcular SMA (middle band)
+        const smaData = calculateSMA(data, period);
+        
+        for (let i = 0; i < smaData.length; i++) {
+            const index = i + period - 1;
+            const sma = smaData[i].value;
+            
+            // Calcular desviación estándar
+            let sum = 0;
+            for (let j = 0; j < period; j++) {
+                sum += Math.pow(data[index - j].close - sma, 2);
+            }
+            const stdDev = Math.sqrt(sum / period);
+            
+            middle.push({
+                time: data[index].time,
+                value: sma
+            });
+            
+            upper.push({
+                time: data[index].time,
+                value: sma + stdDev * deviations
+            });
+            
+            lower.push({
+                time: data[index].time,
+                value: sma - stdDev * deviations
+            });
+        }
+        
+        return { upper, middle, lower };
+    }
+    
+    function calculateRSI(data, period) {
+        const result = [];
+        let avgGain = 0;
+        let avgLoss = 0;
+        
+        // Calcular ganancia/pérdida inicial
+        for (let i = 1; i <= period; i++) {
+            const change = data[i].close - data[i - 1].close;
+            if (change >= 0) {
+                avgGain += change;
+            } else {
+                avgLoss += Math.abs(change);
+            }
+        }
+        
+        avgGain /= period;
+        avgLoss /= period;
+        
+        for (let i = period + 1; i < data.length; i++) {
+            // Calcular RS
+            let rs = avgGain / avgLoss;
+            if (avgLoss === 0) rs = 100;
+            
+            // Calcular RSI
+            const rsi = 100 - (100 / (1 + rs));
+            
+            result.push({
+                time: data[i - 1].time,
+                value: rsi
+            });
+            
+            // Actualizar avgGain y avgLoss
+            const change = data[i].close - data[i - 1].close;
+            avgGain = ((avgGain * (period - 1)) + (change >= 0 ? change : 0)) / period;
+            avgLoss = ((avgLoss * (period - 1)) + (change < 0 ? Math.abs(change) : 0)) / period;
+        }
+        
+        return result;
+    }
+    
+    function calculateMACD(data, fastPeriod, slowPeriod, signalPeriod) {
+        const macdLine = [];
+        const signalLine = [];
+        const histogram = [];
+        
+        // Calcular EMAs
+        const fastEma = calculateEMA(data, fastPeriod);
+        const slowEma = calculateEMA(data, slowPeriod);
+        
+        // Alinear EMAs (comenzar desde el punto donde ambos estén disponibles)
+        const startIndex = Math.max(fastPeriod, slowPeriod) - 1;
+        
+        // Calcular línea MACD (diferencia entre EMAs)
+        const macdData = [];
+        for (let i = 0; i < slowEma.length; i++) {
+            const fastIndex = i + (slowEma.length - fastEma.length);
+            if (fastIndex >= 0) {
+                macdData.push({
+                    time: slowEma[i].time,
+                    value: fastEma[fastIndex].value - slowEma[i].value
+                });
+            }
+        }
+        
+        // Calcular línea de señal (EMA del MACD)
+        let signalEma = 0;
+        for (let i = 0; i < macdData.length; i++) {
+            if (i < signalPeriod) {
+                signalEma += macdData[i].value;
+                if (i === signalPeriod - 1) {
+                    signalEma /= signalPeriod;
+                    signalLine.push({
+                        time: macdData[i].time,
+                        value: signalEma
+                    });
+                }
+                continue;
+            }
+            
+            signalEma = macdData[i].value * (2 / (signalPeriod + 1)) + signalEma * (1 - 2 / (signalPeriod + 1));
+            signalLine.push({
+                time: macdData[i].time,
+                value: signalEma
+            });
+            
+            // Añadir línea MACD y histograma una vez que tenemos la señal
+            if (i >= signalPeriod - 1) {
+                macdLine.push({
+                    time: macdData[i].time,
+                    value: macdData[i].value
+                });
+                
+                histogram.push({
+                    time: macdData[i].time,
+                    value: macdData[i].value - signalEma,
+                    color: macdData[i].value >= signalEma ? '#26a69a' : '#ef5350'
+                });
+            }
+        }
+        
+        return { macdLine, signalLine, histogram };
+    }
+    
+    // Cargar datos iniciales
+    loadMarketData();
+    
+    // Inicializar medias móviles predeterminadas después de cargar los datos
+    function initDefaultMAs() {
+        // Limpiar medias existentes
+        movingAverages.forEach(ma => chart.removeSeries(ma.series));
+        movingAverages = [];
+        
+        // Añadir medias predeterminadas
+        defaultMAs.forEach(ma => {
+            addIndicator('movingAverage', ma);
+        });
+    }
+    
+    // Configurar los controladores de eventos para los nuevos botones
+    function setupEventListeners() {
+        // Botón para añadir una nueva media móvil
+        document.getElementById('add-ma').addEventListener('click', function() {
+            const type = document.getElementById('ma-type').value;
+            const period = parseInt(document.getElementById('ma-period').value);
+            const color = document.getElementById('ma-color').value;
+            const width = parseFloat(document.getElementById('ma-width').value);
+            const opacity = parseFloat(document.getElementById('ma-opacity').value);
+            
+            window.indicatorsModule.addIndicator('movingAverage', { type, period, color, width, opacity }, chart, marketData);
+        });
+        
+        // Botón para restaurar las medias predeterminadas
+        document.getElementById('reset-default-mas').addEventListener('click', function() {
+            window.indicatorsModule.initDefaultMAs(chart, marketData);
+        });
+        
+        // RSI toggle
+        document.getElementById('toggle-rsi').addEventListener('click', function() {
+            const isActive = document.getElementById('rsi-toggle-status').textContent === 'Desactivar';
+            
+            if (isActive) {
+                // Desactivar RSI
+                if (window.indicatorsModule.indicators.rsiPane) {
+                    chart.removePaneByName('rsiPane');
+                    window.indicatorsModule.indicators.rsiPane = null;
+                    window.indicatorsModule.indicators.rsi = null;
+                    window.indicatorsModule.indicators.rsiOverbought = null;
+                    window.indicatorsModule.indicators.rsiOversold = null;
+                    window.indicatorsModule.indicators.rsiMidline = null;
+                }
+                document.getElementById('rsi-toggle-status').textContent = 'Activar';
+            } else {
+                // Activar RSI con los parámetros actuales
+                const period = parseInt(document.getElementById('rsi-period').value);
+                const overbought = parseInt(document.getElementById('rsi-overbought').value);
+                const oversold = parseInt(document.getElementById('rsi-oversold').value);
+                const showOverbought = document.getElementById('rsi-show-overbought').checked;
+                const showOversold = document.getElementById('rsi-show-oversold').checked;
+                const showMidline = document.getElementById('rsi-show-midline').checked;
+                const color = document.getElementById('rsi-color').value;
+                const width = parseFloat(document.getElementById('rsi-width').value);
+                const opacity = parseFloat(document.getElementById('rsi-opacity').value || 0.8);
+                
+                window.indicatorsModule.addIndicator('rsi', {
+                    period, 
+                    overbought, 
+                    oversold, 
+                    showOverbought, 
+                    showOversold, 
+                    showMidline,
+                    color,
+                    width,
+                    opacity
+                }, chart, marketData);
+                document.getElementById('rsi-toggle-status').textContent = 'Desactivar';
+            }
+            window.indicatorsModule.updateActiveIndicators();
+        });
+        
+        // Volume toggle
+        document.getElementById('toggle-volume').addEventListener('click', function() {
+            const isActive = document.getElementById('volume-toggle-status').textContent === 'Desactivar';
+            
+            if (isActive) {
+                // Desactivar volumen
+                if (window.indicatorsModule.indicators.volumePane) {
+                    chart.removePaneByName('volumePane');
+                    window.indicatorsModule.indicators.volumePane = null;
+                    window.indicatorsModule.indicators.volume = null;
+                    window.indicatorsModule.indicators.volumeMA = null;
+                }
+                document.getElementById('volume-toggle-status').textContent = 'Activar';
+            } else {
+                // Activar volumen con los parámetros actuales
+                const showMA = document.getElementById('volume-show-ma').checked;
+                const topPosition = document.getElementById('volume-top-position').checked;
+                const opacity = parseFloat(document.getElementById('volume-opacity').value);
+                const maPeriod = parseInt(document.getElementById('volume-ma-period').value);
+                const maColor = document.getElementById('volume-ma-color').value;
+                
+                window.indicatorsModule.addIndicator('volume', { 
+                    showMA, 
+                    topPosition, 
+                    opacity, 
+                    maPeriod, 
+                    maColor 
+                }, chart, marketData);
+                document.getElementById('volume-toggle-status').textContent = 'Desactivar';
+            }
+            window.indicatorsModule.updateActiveIndicators();
+        });
+        
+        // Botones para aplicar cada indicador
+        document.querySelectorAll('.apply-indicator').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const indicatorType = this.getAttribute('data-indicator');
+                
+                switch(indicatorType) {
+                    case 'bollinger':
+                        const bollingerPeriod = parseInt(document.getElementById('bollinger-period').value);
+                        const bollingerDeviations = parseFloat(document.getElementById('bollinger-deviations').value);
+                        window.indicatorsModule.addIndicator('bollinger', { 
+                            period: bollingerPeriod, 
+                            deviations: bollingerDeviations 
+                        }, chart, marketData);
+                        break;
+                        
+                    case 'macd':
+                        const fastPeriod = parseInt(document.getElementById('macd-fast').value);
+                        const slowPeriod = parseInt(document.getElementById('macd-slow').value);
+                        const signalPeriod = parseInt(document.getElementById('macd-signal').value);
+                        window.indicatorsModule.addIndicator('macd', { 
+                            fast: fastPeriod, 
+                            slow: slowPeriod, 
+                            signal: signalPeriod 
+                        }, chart, marketData);
+                        break;
+                        
+                    case 'rsi':
+                        document.getElementById('toggle-rsi').click();
+                        break;
+                        
+                    case 'volume':
+                        document.getElementById('toggle-volume').click();
+                        break;
+                }
+            });
+        });
+    }
+    
+    // Ejecutar después de que el DOM esté completamente cargado
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            window.indicatorsModule.initDefaultMAs(chart, marketData);
+            setupEventListeners();
+        }, 1000); // Pequeño retraso para asegurar que los datos estén cargados
+    });
+
+    // Función para cargar fuentes de datos
+    function loadSources() {
+        fetch('/api/market/sources')
+            .then(response => response.json())
+            .then(sources => {
+                const sourceSelect = document.getElementById('dataSource');
+                sourceSelect.innerHTML = '';
+                
+                sources.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = source.charAt(0).toUpperCase() + source.slice(1);
+                    sourceSelect.appendChild(option);
+                });
+                
+                // Configurar evento change
+                sourceSelect.addEventListener('change', function() {
+                    currentSource = this.value;
+                    loadSymbols(currentSource);
+                });
+                
+                // Cargar símbolos iniciales
+                loadSymbols(currentSource);
+            })
+            .catch(error => console.error('Error cargando fuentes:', error));
+    }
+    
+    // Función para cargar símbolos
+    function loadSymbols(source) {
+        fetch(`/api/market/symbols?source=${source}`)
+            .then(response => response.json())
+            .then(symbols => {
+                const symbolSelect = document.getElementById('tradingPair');
+                symbolSelect.innerHTML = '';
+                
+                // Si no hay símbolos o es un error, mostrar opciones por defecto
+                if (!symbols || symbols.length === 0) {
+                    const defaultSymbols = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'XRP/USDT', 'AAPL'];
+                    defaultSymbols.forEach(symbol => {
+                        const option = document.createElement('option');
+                        option.value = symbol;
+                        option.textContent = symbol;
+                        symbolSelect.appendChild(option);
+                    });
+                } else {
+                    // Mostrar los primeros 100 símbolos (puede haber muchos)
+                    symbols.slice(0, 100).forEach(symbol => {
+                        const option = document.createElement('option');
+                        option.value = symbol;
+                        option.textContent = symbol;
+                        symbolSelect.appendChild(option);
+                    });
+                }
+                
+                // Configurar evento change
+                symbolSelect.addEventListener('change', function() {
+                    currentSymbol = this.value;
+                    loadMarketData();
+                });
+            })
+            .catch(error => console.error('Error cargando símbolos:', error));
+    }
+    
+    // Función para cargar datos de mercado
+    function loadMarketData() {
+        // Mostrar indicador de carga
+        document.querySelector('.chart-loading').style.display = 'flex';
+        
+        // Clear any previous error message
+        document.getElementById('ai-content').innerHTML = '';
+        
+        const url = `/api/market/data?source=${currentSource}&symbol=${currentSymbol}&timeframe=${currentTimeframe}&limit=200`;
+        console.log(`Fetching data from: ${url}`);
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Ocultar indicador de carga
+                document.querySelector('.chart-loading').style.display = 'none';
+                
+                console.log(`Received ${data ? data.length : 0} data points`);
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('ai-content').innerHTML = `
+                        <p class="error-message">No se encontraron datos para:
+                        <br>Fuente: ${currentSource}
+                        <br>Símbolo: ${currentSymbol}
+                        <br>Timeframe: ${currentTimeframe}</p>
+                        <p>Intente con otra combinación o verifique la conexión.</p>
+                    `;
+                    return;
+                }
+                
+                // Ensure data is correctly formatted
+                const formattedData = data.map(item => ({
+                    time: item.time,
+                    open: Number(item.open),
+                    high: Number(item.high),
+                    low: Number(item.low),
+                    close: Number(item.close),
+                    volume: Number(item.volume || 0)
+                }));
+                
+                console.log('Sample data point:', formattedData[0]);
+                
+                // Guardar datos para indicadores
+                marketData = formattedData;
+                window.marketData = formattedData;
+                
+                // Actualizar el gráfico
+                candleSeries.setData(formattedData);
+                
+                // Actualizar marcadores de precio máximo/mínimo
+                if (window.chartElements && window.chartElements.updatePriceMarkers) {
+                    window.chartElements.updatePriceMarkers(formattedData);
+                }
+                
+                // Actualizar la leyenda
+                updateChartLegend(formattedData);
+                
+                // Actualizar cualquier indicador activo
+                Object.keys(window.indicatorsModule.indicators).forEach(key => {
+                    if (key === 'sma' && window.indicatorsModule.indicators.sma) {
+                        const period = parseInt(document.getElementById('sma-period').value);
+                        window.indicatorsModule.addIndicator('sma', { period }, chart, marketData);
+                    } else if (key === 'ema' && window.indicatorsModule.indicators.ema) {
+                        const period = parseInt(document.getElementById('ema-period').value);
+                        window.indicatorsModule.addIndicator('ema', { period }, chart, marketData);
+                    } else if (key === 'bollingerUpper' && window.indicatorsModule.indicators.bollingerUpper) {
+                        const period = parseInt(document.getElementById('bollinger-period').value);
+                        const deviations = parseFloat(document.getElementById('bollinger-deviations').value);
+                        window.indicatorsModule.addIndicator('bollinger', { period, deviations }, chart, marketData);
+                    } else if (key === 'rsi' && window.indicatorsModule.indicators.rsi) {
+                        const period = parseInt(document.getElementById('rsi-period').value);
+                        window.indicatorsModule.addIndicator('rsi', { period }, chart, marketData);
+                    } else if (key === 'macdLine' && window.indicatorsModule.indicators.macdLine) {
+                        const fast = parseInt(document.getElementById('macd-fast').value);
+                        const slow = parseInt(document.getElementById('macd-slow').value);
+                        const signal = parseInt(document.getElementById('macd-signal').value);
+                        window.indicatorsModule.addIndicator('macd', { fast, slow, signal }, chart, marketData);
+                    } else if (key === 'volume' && window.indicatorsModule.indicators.volume) {
+                        window.indicatorsModule.addIndicator('volume', {}, chart, marketData);
+                    }
+                });
+                
+                // Inicializar las medias móviles predeterminadas
+                if (window.indicatorsModule.movingAverages.length === 0) {
+                    window.indicatorsModule.initDefaultMAs(chart, marketData);
+                }
+                
+                // Actualizar mensaje en el panel de IA
+                document.getElementById('ai-content').innerHTML = 
+                    `<p>Datos cargados: ${data.length} velas de ${currentSymbol} en ${currentTimeframe}</p>
+                     <p>Último precio: ${data[data.length - 1].close.toFixed(2)}</p>
+                     <p>Volumen: ${data[data.length - 1].volume.toFixed(2)}</p>
+                     <p>Fecha: ${data[data.length - 1].time}</p>`;
+            })
+            .catch(error => {
+                console.error('Error cargando datos de mercado:', error);
+                document.getElementById('ai-content').innerHTML = `<p>Error cargando datos: ${error.message}</p>`;
+                document.querySelector('.chart-loading').style.display = 'none';
+            });
+    }
+    
+    function updateChartLegend(data) {
+        if (!data || data.length === 0) return;
+        
+        const latest = data[data.length - 1];
+        const previous = data.length > 1 ? data[data.length - 2] : latest;
+        
+        document.getElementById('chart-symbol').textContent = currentSymbol;
+        document.getElementById('chart-price').textContent = latest.close.toFixed(2);
+        
+        // Calcular cambio porcentual
+        const change = ((latest.close - previous.close) / previous.close) * 100;
+        const changeElement = document.getElementById('chart-change');
+        changeElement.textContent = change.toFixed(2) + '%';
+        changeElement.className = change >= 0 ? 'positive' : 'negative';
+        
+        document.getElementById('chart-timeframe').textContent = currentTimeframe.toUpperCase();
+    }
+
+    // Ajustar tamaño del gráfico cuando cambie el tamaño de la ventana
+    window.addEventListener('resize', () => {
+        chart.applyOptions({
+            width: chartContainer.clientWidth,
+            height: chartContainer.clientHeight,
+        });
+    });
+
+    // Botón para ocultar controles
+    document.getElementById('hideControls').addEventListener('click', function() {
+        const sidebar = document.querySelector('.sidebar-controls');
+        const mainChart = document.querySelector('.main-chart-container');
+        
+        sidebar.classList.toggle('collapsed');
+        mainChart.classList.toggle('expanded');
+        
+        // Actualizar el gráfico tras cambiar el tamaño
+        setTimeout(() => {
+            chart.applyOptions({
+                width: mainChart.clientWidth,
+                height: mainChart.clientHeight,
+            });
+        }, 300);
+    });
+
+    // Botones de temporalidad
+    document.querySelectorAll('.time-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Actualizar temporalidad y recargar datos
+            currentTimeframe = this.getAttribute('data-timeframe');
+            document.getElementById('chart-timeframe').textContent = currentTimeframe.toUpperCase();
+            loadMarketData();
+        });
+    });
+    
+    // Botones de indicadores
+    document.querySelectorAll('.indicator-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const indicator = this.getAttribute('data-indicator');
+            
+            // Ocultar todos los paneles de configuración
+            document.querySelectorAll('.indicator-settings').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            
+            // Mostrar el panel de configuración del indicador seleccionado
+            document.getElementById(`${indicator}-settings`).style.display = 'block';
+        });
+    });
+    
+    // Botones de aplicar indicador
+    document.querySelectorAll('.apply-indicator').forEach(button => {
+        button.addEventListener('click', function() {
+            const indicator = this.getAttribute('data-indicator');
+            
+            switch(indicator) {
+                case 'sma':
+                    const smaPeriod = parseInt(document.getElementById('sma-period').value);
+                    addIndicator('sma', { period: smaPeriod });
+                    break;
+                case 'ema':
+                    const emaPeriod = parseInt(document.getElementById('ema-period').value);
+                    addIndicator('ema', { period: emaPeriod });
+                    break;
+                case 'bollinger':
+                    const bollingerPeriod = parseInt(document.getElementById('bollinger-period').value);
+                    const bollingerDevs = parseFloat(document.getElementById('bollinger-deviations').value);
+                    addIndicator('bollinger', { period: bollingerPeriod, deviations: bollingerDevs });
+                    break;
+                case 'rsi':
+                    const rsiPeriod = parseInt(document.getElementById('rsi-period').value);
+                    addIndicator('rsi', { period: rsiPeriod });
+                    break;
+                case 'macd':
+                    const fastPeriod = parseInt(document.getElementById('macd-fast').value);
+                    const slowPeriod = parseInt(document.getElementById('macd-slow').value);
+                    const signalPeriod = parseInt(document.getElementById('macd-signal').value);
+                    addIndicator('macd', { fast: fastPeriod, slow: slowPeriod, signal: signalPeriod });
+                    break;
+                case 'volume':
+                    addIndicator('volume');
+                    break;
+            }
+            
+            // Ocultar el panel de configuración
+            document.getElementById(`${indicator}-settings`).style.display = 'none';
+        });
+    });
+    
+    // Botones de eliminar indicador
+    document.querySelectorAll('.remove-indicator').forEach(button => {
+        button.addEventListener('click', function() {
+            const indicator = this.getAttribute('data-indicator');
+            
+            switch(indicator) {
+                case 'sma':
+                    if (indicators.sma) {
+                        chart.removeSeries(indicators.sma);
+                        delete indicators.sma;
+                    }
+                    break;
+                case 'ema':
+                    if (indicators.ema) {
+                        chart.removeSeries(indicators.ema);
+                        delete indicators.ema;
+                    }
+                    break;
+                case 'bollinger':
+                    if (indicators.bollingerUpper) {
+                        chart.removeSeries(indicators.bollingerUpper);
+                        delete indicators.bollingerUpper;
+                    }
+                    if (indicators.bollingerMiddle) {
+                        chart.removeSeries(indicators.bollingerMiddle);
+                        delete indicators.bollingerMiddle;
+                    }
+                    if (indicators.bollingerLower) {
+                        chart.removeSeries(indicators.bollingerLower);
+                        delete indicators.bollingerLower;
+                    }
+                    break;
+                case 'rsi':
+                    if (indicators.rsiPane) {
+                        chart.removePaneSeries();
+                        delete indicators.rsiPane;
+                        delete indicators.rsi;
+                        delete indicators.rsiOverbought;
+                        delete indicators.rsiOversold;
+                    }
+                    break;
+                case 'macd':
+                    if (indicators.macdPane) {
+                        chart.removePaneSeries();
+                        delete indicators.macdPane;
+                        delete indicators.macdLine;
+                        delete indicators.signalLine;
+                        delete indicators.histogramSeries;
+                    }
+                    break;
+                case 'volume':
+                    if (indicators.volumePane) {
+                        chart.removePaneSeries();
+                        delete indicators.volumePane;
+                        delete indicators.volume;
+                    }
+                    break;
+            }
+            
+            // Ocultar el panel de configuración
+            document.getElementById(`${indicator}-settings`).style.display = 'none';
+            updateActiveIndicators();
+        });
+    });
+
+    // Funcionalidad para el botón de análisis IA
+    document.getElementById('aiAnalysis').addEventListener('click', function() {
+        const aiContent = document.getElementById('ai-content');
+        aiContent.innerHTML = '<p>Analizando gráfico de ' + currentSymbol + ' en temporalidad ' + currentTimeframe + '...</p>';
+        
+        // Simulación de análisis IA
+        setTimeout(() => {
+            let analysis = '<p><strong>Análisis Técnico:</strong></p>';
+            
+            // Datos aleatorios para la demostración
+            const trend = Math.random() > 0.5 ? 'Alcista' : 'Bajista';
+            const support = (Math.random() * 1000 + 1000).toFixed(2);
+            const resistance = (parseFloat(support) + Math.random() * 500).toFixed(2);
+            
+            analysis += `<p>Tendencia: <span class="${trend === 'Alcista' ? 'bullish' : 'bearish'}">${trend}</span></p>`;
+            analysis += `<p>Soporte: ${support} USD</p>`;
+            analysis += `<p>Resistencia: ${resistance} USD</p>`;
+            
+            if (trend === 'Alcista') {
+                analysis += '<p>Recomendación: Considerar entradas largas con stop por debajo del soporte.</p>';
+            } else {
+                analysis += '<p>Recomendación: Considerar entradas cortas con stop por encima de la resistencia.</p>';
+            }
+            
+            analysis += '<p>Indicadores:</p>';
+            analysis += '<ul>';
+            analysis += '<li>RSI: ' + (Math.random() * 100).toFixed(2) + '</li>';
+            analysis += '<li>MACD: ' + (Math.random() > 0.5 ? 'Positivo' : 'Negativo') + '</li>';
+            analysis += '<li>Media Móvil 50/200: ' + (Math.random() > 0.5 ? 'Cruce alcista' : 'Cruce bajista') + '</li>';
+            analysis += '</ul>';
+            
+            aiContent.innerHTML = analysis;
+        }, 1500);
+    });
+
+    // Funcionalidad para el asistente IA
+    document.getElementById('aiAssistant').addEventListener('click', function() {
+        const aiContent = document.getElementById('ai-content');
+        aiContent.innerHTML = '<div class="chat-container">' +
+                            '<div class="chat-message">¿En qué puedo ayudarte con tu análisis de ' + currentSymbol + '?</div>' +
+                            '<textarea class="chat-input" placeholder="Escribe tu consulta..."></textarea>' +
+                            '<button class="chat-send">Enviar</button>' +
+                            '</div>';
+        
+        // Añadir funcionalidad al botón de enviar (simulación)
+        document.querySelector('.chat-send').addEventListener('click', function() {
+            const input = document.querySelector('.chat-input');
+            if (input.value.trim() !== '') {
+                const userMsg = document.createElement('div');
+                userMsg.className = 'chat-message user';
+                userMsg.textContent = input.value;
+                document.querySelector('.chat-container').insertBefore(userMsg, input);
+                input.value = '';
+                
+                // Simular respuesta
+                setTimeout(() => {
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'chat-message';
+                    aiMsg.textContent = "Basado en el análisis técnico actual, " + currentSymbol + " muestra signos de continuación. Considera vigilar el volumen para confirmar la dirección del movimiento.";
+                    document.querySelector('.chat-container').insertBefore(aiMsg, input);
+                }, 1000);
+            }
+        });
+    });
+    
+    // Inicializar carga de fuentes y símbolos
+    loadSources();
+    
+    // Inicializar búsqueda de símbolos y favoritos
+    initSymbolSearch();
+    
+    // Inicializar acordeón de indicadores
+    initIndicatorAccordion();
+    
+    // Inicializar toggle de tema
+    initThemeToggle();
+    
+    // Tiempo
+    document.getElementById('timeframeSelect').addEventListener('change', function() {
+        currentTimeframe = this.value;
+        loadMarketData();
+    });
+    
+    // Configurar UI según la sección (Análisis vs Trading)
+    function setupUIForSection() {
+        // Detectar si estamos en sección Análisis o Trading
+        const currentUrl = window.location.pathname;
+        const currentTab = document.querySelector('.nav-link.active');
+        
+        // Método preferido - detectar por el tab activo
+        let isAnalysisSection = false;
+        let isTradingSection = false;
+        
+        if (currentTab) {
+            isAnalysisSection = currentTab.textContent.trim().toLowerCase().includes('análisis');
+            isTradingSection = currentTab.textContent.trim().toLowerCase().includes('trading');
+        } else {
+            // Método de respaldo - detectar por URL
+            isAnalysisSection = currentUrl.indexOf('analysis') !== -1 || currentUrl.indexOf('analisis') !== -1;
+            isTradingSection = currentUrl.indexOf('trading') !== -1;
+        }
+        
+        const aiPanel = document.getElementById('ai-panel');
+        const sidebarControls = document.getElementById('sidebar-controls');
+        const aiAnalysisBtn = document.getElementById('aiAnalysis');
+        const marketControls = document.getElementById('market-controls');
+        
+        // Configurar UI según la sección
+        if (isTradingSection) {
+            // Configuración para sección Trading
+            document.body.setAttribute('data-section', 'trading');
+            if (aiPanel) aiPanel.style.display = 'none';
+            if (aiAnalysisBtn) aiAnalysisBtn.style.display = 'none';
+            if (sidebarControls) sidebarControls.classList.add('trading-mode');
+            
+            // Mostrar botones relevantes para Trading
+            document.querySelectorAll('.section-analysis').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.section-trading').forEach(el => el.style.display = 'block');
+            
+            // Simplificar la interfaz para Trading
+            if (marketControls) {
+                marketControls.innerHTML = `
+                    <div class="section-buttons">
+                        <button id="ocultar-btn" class="section-button">Ocultar</button>
+                        <button id="asistente-ia-btn" class="section-button active">Asistente IA</button>
+                    </div>
+                    <div class="control-group">
+                        <label>Fuente de Datos</label>
+                        <select id="dataSource" class="market-select">
+                            <option value="binance">Binance</option>
+                            <option value="coinbase">Coinbase</option>
+                            <option value="kraken">Kraken</option>
+                            <option value="bybit">Bybit</option>
+                            <option value="kucoin">KuCoin</option>
+                            <option value="bingx">BingX</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Par de Trading / Símbolo</label>
+                        <div class="symbol-search-container">
+                            <input type="text" id="symbolSearch" class="symbol-input" placeholder="ETH/USDT" autocomplete="off">
+                            <button class="favorite-button" id="favorite-toggle">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Temporalidad</label>
+                        <select id="timeframeSelect" class="timeframe-selector">
+                            <option value="1m">1 minuto</option>
+                            <option value="5m">5 minutos</option>
+                            <option value="15m">15 minutos</option>
+                            <option value="30m">30 minutos</option>
+                            <option value="1h" selected>1 hora</option>
+                            <option value="4h">4 horas</option>
+                            <option value="1d">1 día</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Reiniciar los event listeners
+                setupEventListeners();
+            }
+        } else {
+            // Configuración para sección Análisis (por defecto)
+            document.body.setAttribute('data-section', 'analysis');
+            if (aiPanel) aiPanel.style.display = 'block';
+            if (aiAnalysisBtn) aiAnalysisBtn.style.display = 'inline-block';
+            if (sidebarControls) sidebarControls.classList.remove('trading-mode');
+            
+            // Mostrar botones relevantes para Análisis
+            document.querySelectorAll('.section-analysis').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.section-trading').forEach(el => el.style.display = 'none');
+        }
+        
+        // Reconectar el manejo de eventos después de modificar el DOM
+        reconnectSymbolSearchListeners();
+    }
+    
+    // Ejecutar configuración al cargar
+    setupUIForSection();
+    
+    // Manejar el botón desplegable de símbolos
+    const symbolDropdownBtn = document.getElementById('symbolDropdownBtn');
+    const symbolResults = document.getElementById('symbolResults');
+    
+    if (symbolDropdownBtn) {
+        symbolDropdownBtn.addEventListener('click', function() {
+            if (symbolResults.style.display === 'block') {
+                symbolResults.style.display = 'none';
+            } else {
+                loadSymbols(currentSource);
+                symbolResults.style.display = 'block';
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

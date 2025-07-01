@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Test</title>
+    <style>
+        body {
+            background: #0d1117;
+            color: #FAFAFA;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .chart-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 400px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #0d4d40; border: 1px solid #0d8062; }
+        .error { background: #4d0d0d; border: 1px solid #8b0000; }
+        .info { background: #0d2847; border: 1px solid #1f6feb; }
+    </style>
+</head>
+<body>
+    <h1>Chart Test Page</h1>
+    
+    <div id="status-container"></div>
+    
+    <div class="chart-container">
+        <h3>Test Chart 1: Simple Line</h3>
+        <div id="test-chart-1"></div>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Test Chart 2: Bar Chart (Like Strike Chart)</h3>
+        <div id="test-chart-2"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+    <script>
+        function addStatus(message, type = 'info') {
+            const container = document.getElementById('status-container');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            container.appendChild(div);
+            console.log(message);
+        }
+
+        addStatus('Page loaded');
+        addStatus(`ApexCharts available: ${typeof ApexCharts !== 'undefined'}`, 
+                 typeof ApexCharts !== 'undefined' ? 'success' : 'error');
+
+        if (typeof ApexCharts !== 'undefined') {
+            // Test Chart 1: Simple Line Chart
+            const options1 = {
+                series: [{
+                    name: 'Sample Data',
+                    data: [30, 40, 35, 50, 49, 60, 70, 91, 125]
+                }],
+                chart: {
+                    height: 350,
+                    type: 'line',
+                    background: 'transparent',
+                    foreColor: '#FAFAFA'
+                },
+                colors: ['#4BC0C0'],
+                xaxis: {
+                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']
+                },
+                grid: {
+                    borderColor: '#30363D'
+                }
+            };
+
+            // Test Chart 2: Bar Chart like Strike Chart
+            const options2 = {
+                series: [
+                    { name: 'Puts', data: [15, 8, 12, 20, 30, 40, 18, 25, 10] },
+                    { name: 'Calls', data: [5, 12, 18, 25, 35, 50, 40, 30, 15] }
+                ],
+                chart: {
+                    type: 'bar',
+                    height: 400,
+                    foreColor: '#FAFAFA',
+                    background: 'transparent',
+                    toolbar: { show: false },
+                    stacked: false
+                },
+                colors: ['#FF6384', '#4BC0C0'],
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '70%',
+                        borderRadius: 2
+                    }
+                },
+                dataLabels: { enabled: false },
+                xaxis: {
+                    categories: ['85K', '90K', '95K', '100K', '105K', '110K', '115K', '120K', '125K'],
+                    labels: {
+                        style: { colors: '#FAFAFA' },
+                        rotate: -45
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: { colors: '#FAFAFA' },
+                        formatter: function(val) {
+                            return val >= 1000 ? (val/1000).toFixed(0) + 'k' : val;
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#30363D',
+                    strokeDashArray: 3
+                },
+                tooltip: {
+                    theme: 'dark'
+                },
+                legend: {
+                    position: 'bottom',
+                    labels: { colors: '#FAFAFA' }
+                }
+            };
+
+            try {
+                addStatus('Creating Chart 1...');
+                const chart1 = new ApexCharts(document.getElementById('test-chart-1'), options1);
+                chart1.render().then(() => {
+                    addStatus('Chart 1 rendered successfully!', 'success');
+                }).catch(err => {
+                    addStatus(`Chart 1 render failed: ${err.message}`, 'error');
+                });
+
+                addStatus('Creating Chart 2...');
+                const chart2 = new ApexCharts(document.getElementById('test-chart-2'), options2);
+                chart2.render().then(() => {
+                    addStatus('Chart 2 rendered successfully!', 'success');
+                }).catch(err => {
+                    addStatus(`Chart 2 render failed: ${err.message}`, 'error');
+                });
+
+            } catch (error) {
+                addStatus(`Chart creation failed: ${error.message}`, 'error');
+            }
+        } else {
+            addStatus('ApexCharts not loaded - cannot create charts', 'error');
+        }
+    </script>
+</body>
+</html>

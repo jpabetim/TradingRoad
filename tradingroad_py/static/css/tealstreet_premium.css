@@ -1,0 +1,543 @@
+/* TealStreet Pro - Mejoras visuales adicionales para máxima similitud */
+
+/* Animaciones suaves profesionales */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Efectos de carga profesionales */
+.loading-skeleton {
+    background: linear-gradient(90deg,
+            var(--teal-bg-tertiary) 25%,
+            var(--teal-surface) 50%,
+            var(--teal-bg-tertiary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+/* Barra superior con efectos visuales mejorados */
+.tealstreet-topbar {
+    background: linear-gradient(135deg, var(--teal-bg-secondary) 0%, #101419 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--teal-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+/* Efectos hover mejorados para controles */
+.symbol-selector:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--teal-shadow);
+}
+
+.tf-btn:hover:not(.active) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.topbar-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(41, 98, 255, 0.3);
+}
+
+/* Gráfico con efectos profesionales */
+.chart-area {
+    position: relative;
+    background: radial-gradient(circle at 30% 30%, var(--teal-bg-primary) 0%, #080B12 100%);
+}
+
+.chart-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(41, 98, 255, 0.03) 50%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(41, 98, 255, 0.02) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.main-chart {
+    position: relative;
+    z-index: 2;
+}
+
+/* Toolbar lateral con glassmorphism */
+.chart-toolbar {
+    background: rgba(19, 23, 34, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(42, 46, 57, 0.5);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.37),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tool-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: var(--teal-transition);
+}
+
+.tool-btn:hover::before {
+    left: 100%;
+}
+
+/* Indicadores activos con efectos */
+.indicator-chip {
+    background: rgba(19, 23, 34, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--teal-border);
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+}
+
+.indicator-chip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: var(--teal-accent);
+    border-radius: 1px;
+}
+
+/* Modal con efectos glassmorphism */
+.tealstreet-modal {
+    background: rgba(19, 23, 34, 0.95);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(42, 46, 57, 0.8);
+    box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Grid de indicadores mejorado */
+.indicator-card {
+    background: linear-gradient(135deg, var(--teal-bg-tertiary) 0%, rgba(30, 34, 45, 0.8) 100%);
+    border: 1px solid var(--teal-border);
+    backdrop-filter: blur(10px);
+    transition: var(--teal-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.indicator-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal-accent), transparent);
+    opacity: 0;
+    transition: var(--teal-transition);
+}
+
+.indicator-card:hover::before {
+    opacity: 1;
+}
+
+.indicator-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--teal-accent);
+    box-shadow:
+        0 8px 25px rgba(41, 98, 255, 0.15),
+        0 0 0 1px rgba(41, 98, 255, 0.1);
+}
+
+/* Switch mejorado con efectos */
+.switch {
+    position: relative;
+}
+
+.slider {
+    background: var(--teal-surface);
+    transition: var(--teal-transition);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider:before {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+    transition: var(--teal-transition);
+}
+
+input:checked+.slider {
+    background: linear-gradient(135deg, var(--teal-accent) 0%, var(--teal-accent-hover) 100%);
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.2),
+        0 0 8px rgba(41, 98, 255, 0.3);
+}
+
+input:checked+.slider:before {
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones con efectos premium */
+.btn-primary {
+    background: linear-gradient(135deg, var(--teal-accent) 0%, var(--teal-accent-hover) 100%);
+    border: 1px solid var(--teal-accent);
+    box-shadow:
+        0 4px 14px rgba(41, 98, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: var(--teal-transition);
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 6px 20px rgba(41, 98, 255, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Información del símbolo con efectos */
+.symbol-header {
+    background: linear-gradient(135deg, var(--teal-bg-secondary) 0%, rgba(19, 23, 34, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--teal-border);
+}
+
+.symbol-price {
+    text-shadow: 0 0 10px rgba(8, 153, 129, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.symbol-change.positive {
+    background: linear-gradient(135deg, rgba(8, 153, 129, 0.1) 0%, rgba(8, 153, 129, 0.05) 100%);
+    border: 1px solid rgba(8, 153, 129, 0.2);
+    color: var(--teal-bull);
+    text-shadow: 0 0 8px rgba(8, 153, 129, 0.4);
+}
+
+.symbol-change.negative {
+    background: linear-gradient(135deg, rgba(242, 54, 69, 0.1) 0%, rgba(242, 54, 69, 0.05) 100%);
+    border: 1px solid rgba(242, 54, 69, 0.2);
+    color: var(--teal-bear);
+    text-shadow: 0 0 8px rgba(242, 54, 69, 0.4);
+}
+
+/* Controles de zoom con efectos */
+.zoom-controls {
+    background: rgba(19, 23, 34, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(42, 46, 57, 0.5);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.37),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.zoom-btn:hover {
+    background: var(--teal-surface);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(41, 98, 255, 0.3);
+}
+
+/* Efectos de tipografía mejorados */
+.symbol-name {
+    background: linear-gradient(135deg, var(--teal-text-white) 0%, var(--teal-text-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+/* Efectos de notificación premium */
+.notification {
+    background: linear-gradient(135deg, rgba(19, 23, 34, 0.95) 0%, rgba(30, 34, 45, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--teal-border);
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification.success::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--teal-bull) 0%, rgba(8, 153, 129, 0.5) 100%);
+    border-radius: 0 2px 2px 0;
+}
+
+.notification.error::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--teal-bear) 0%, rgba(242, 54, 69, 0.5) 100%);
+    border-radius: 0 2px 2px 0;
+}
+
+/* Scrollbar personalizado premium */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--teal-bg-primary);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--teal-surface) 0%, var(--teal-border-hover) 100%);
+    border-radius: 3px;
+    transition: var(--teal-transition);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--teal-accent) 0%, var(--teal-accent-hover) 100%);
+    box-shadow: 0 0 6px rgba(41, 98, 255, 0.4);
+}
+
+/* Efectos de partículas en el fondo */
+.chart-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 80%, rgba(41, 98, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(8, 153, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(242, 54, 69, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.6;
+}
+
+/* Mejoras responsive premium */
+@media (max-width: 768px) {
+    .tealstreet-topbar {
+        backdrop-filter: blur(15px);
+    }
+
+    .chart-toolbar {
+        backdrop-filter: blur(15px);
+    }
+
+    .tealstreet-modal {
+        backdrop-filter: blur(30px);
+    }
+
+    .notification {
+        backdrop-filter: blur(15px);
+    }
+}
+
+/* Estados de carga avanzados */
+.chart-loading {
+    background: rgba(12, 17, 28, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(41, 98, 255, 0.1);
+    border-left-color: var(--teal-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-shadow: 0 0 20px rgba(41, 98, 255, 0.3);
+}
+
+/* Efectos de hover para categorías */
+.category-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.category-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(41, 98, 255, 0.1), transparent);
+    transition: var(--teal-transition);
+}
+
+.category-btn:hover::before {
+    left: 100%;
+}
+
+/* Efectos para inputs */
+.search-input:focus,
+.setting-input:focus {
+    box-shadow:
+        0 0 0 2px rgba(41, 98, 255, 0.2),
+        0 4px 12px rgba(41, 98, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+/* Efectos de selección para cards */
+.indicator-card.selected {
+    transform: translateY(-4px);
+    border-color: var(--teal-accent);
+    background: linear-gradient(135deg, rgba(41, 98, 255, 0.1) 0%, var(--teal-bg-tertiary) 100%);
+    box-shadow:
+        0 12px 30px rgba(41, 98, 255, 0.2),
+        0 0 0 1px rgba(41, 98, 255, 0.3);
+}
+
+/* Mejoras para la experiencia táctil */
+@media (hover: none) {
+
+    .tool-btn:active,
+    .topbar-btn:active,
+    .tf-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Efectos de foco mejorados */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--teal-accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(41, 98, 255, 0.2);
+}
+
+/* Transiciones de estado */
+.indicator-card,
+.tool-btn,
+.topbar-btn,
+.tf-btn,
+.zoom-btn {
+    will-change: transform, box-shadow;
+}
+
+/* Optimizaciones de rendimiento */
+.chart-area,
+.tealstreet-modal,
+.chart-toolbar {
+    contain: layout style;
+}
+
+/* Efectos de degradado para textos importantes */
+.modal-header h3 {
+    background: linear-gradient(135deg, var(--teal-text-white) 0%, var(--teal-text-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Animaciones de entrada para elementos */
+.indicator-card {
+    animation: fadeIn 0.4s ease-out backwards;
+}
+
+.indicator-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.indicator-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.indicator-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.indicator-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.indicator-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.indicator-card:nth-child(6) {
+    animation-delay: 0.6s;
+}

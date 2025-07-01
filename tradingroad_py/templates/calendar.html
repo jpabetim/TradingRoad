@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Calendario Económico</h1>
+<div class="calendar-container">
+    <div class="calendar-filters">
+        <h2>Filtros</h2>
+        <div class="date-filters">
+            <div class="date-range">
+                <label for="start-date">Desde:</label>
+                <input type="date" id="start-date" class="datepicker">
+                
+                <label for="end-date">Hasta:</label>
+                <input type="date" id="end-date" class="datepicker">
+            </div>
+            
+            <div class="date-shortcuts">
+                <button id="today-btn" class="date-btn">Hoy</button>
+                <button id="week-btn" class="date-btn">Esta Semana</button>
+                <button id="month-btn" class="date-btn">Este Mes</button>
+            </div>
+        </div>
+        
+        <div class="impact-filters">
+            <h3>Impacto</h3>
+            <div class="impact-options">
+                <label>
+                    <input type="checkbox" class="impact-filter" value="Alto" checked>
+                    Alto
+                </label>
+                <label>
+                    <input type="checkbox" class="impact-filter" value="Medio" checked>
+                    Medio
+                </label>
+                <label>
+                    <input type="checkbox" class="impact-filter" value="Bajo">
+                    Bajo
+                </label>
+            </div>
+        </div>
+        
+        <div class="country-filters">
+            <h3>Países</h3>
+            <select id="country-select" multiple>
+                <option value="united states" selected>Estados Unidos</option>
+                <option value="euro zone" selected>Eurozona</option>
+                <option value="united kingdom" selected>Reino Unido</option>
+                <option value="japan" selected>Japón</option>
+                <option value="china" selected>China</option>
+                <option value="germany">Alemania</option>
+                <option value="france">Francia</option>
+                <option value="spain">España</option>
+                <option value="italy">Italia</option>
+                <option value="canada">Canadá</option>
+                <option value="australia">Australia</option>
+                <option value="switzerland">Suiza</option>
+                <option value="new zealand">Nueva Zelanda</option>
+            </select>
+        </div>
+        
+        <div class="filter-actions">
+            <button id="apply-filters" class="primary-btn">Aplicar Filtros</button>
+        </div>
+    </div>
+    
+    <div class="calendar-table-container">
+        <table id="calendar-table" class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>País</th>
+                    <th>Evento</th>
+                    <th>Impacto</th>
+                    <th>Actual</th>
+                    <th>Consenso</th>
+                    <th>Previo</th>
+                </tr>
+            </thead>
+            <tbody id="calendar-data">
+                <tr>
+                    <td colspan="7" class="loading-message">Cargando eventos económicos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/calendar.js"></script>
+{% endblock %}

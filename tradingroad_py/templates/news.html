@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Noticias Financieras</h1>
+<div class="news-container">
+    <div class="news-filter">
+        <h2>Filtros</h2>
+        <div class="filter-options">
+            <label for="news-category">Categoría:</label>
+            <select id="news-category">
+                <option value="all">Todas</option>
+                <option value="markets">Mercados</option>
+                <option value="economy">Economía</option>
+                <option value="stocks">Acciones</option>
+                <option value="crypto">Criptomonedas</option>
+            </select>
+            
+            <label for="news-sentiment">Sentimiento:</label>
+            <select id="news-sentiment">
+                <option value="all">Todos</option>
+                <option value="positive">Positivo</option>
+                <option value="neutral">Neutral</option>
+                <option value="negative">Negativo</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="news-list" id="news-list">
+        <!-- Las noticias se cargarán aquí dinámicamente -->
+        <div class="loading">Cargando noticias...</div>
+    </div>
+    
+    <div class="news-sentiment-summary">
+        <h2>Análisis de Sentimiento</h2>
+        <div class="sentiment-chart" id="sentiment-chart">
+            <!-- El gráfico de sentimiento se mostrará aquí -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/news.js"></script>
+{% endblock %}

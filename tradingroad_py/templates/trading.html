@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trading_analysis_additions.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/indicators.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chart_elements.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/section_modes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/panel_styles.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chart_header.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trading_tools.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .construction-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80vh;
+        text-align: center;
+        color: #666;
+    }
+    
+    .construction-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        color: #ff9800;
+    }
+    
+    .construction-title {
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .construction-text {
+        font-size: 18px;
+        max-width: 600px;
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Trading - TradingRoad{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 flex items-center justify-center" style="height: 80vh;">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-400">Sección en construcción</h1>
+        <p class="text-lg text-gray-500 mt-2">Estamos trabajando para traerte la mejor experiencia de trading.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/lightweight-charts@4.0.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/trading-indicator@1.0.3/dist/trading-indicator.min.js"></script>
+<script src="{{ url_for('static', filename='js/chart_elements.js') }}"></script>
+<script src="{{ url_for('static', filename='js/trading.js') }}"></script>
+{% endblock %}
