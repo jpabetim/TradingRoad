@@ -15,12 +15,24 @@ if __name__ == '__main__':
     print(f"📊 Debug mode: {debug}")
     print(f"🌍 Environment: {os.environ.get('FLASK_ENV', 'development')}")
     
-    # Ejecutar con socketio para WebSocket support
-    socketio.run(
-        app, 
-        debug=debug, 
-        port=port, 
-        host='0.0.0.0',
-        allow_unsafe_werkzeug=True,
-        log_output=True
-    )
+    # Configurar app para producción
+    app.config['DEBUG'] = debug
+    
+    try:
+        # Ejecutar con socketio para WebSocket support
+        socketio.run(
+            app, 
+            debug=debug, 
+            port=port, 
+            host='0.0.0.0',
+            allow_unsafe_werkzeug=True,
+            log_output=True
+        )
+    except Exception as e:
+        print(f"❌ Error starting server: {e}")
+        # Fallback: ejecutar sin socketio
+        app.run(
+            debug=debug,
+            port=port,
+            host='0.0.0.0'
+        )
