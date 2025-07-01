@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Bienvenido a TradingRoad</h1>
+<h1>Dashboard</h1>
 
 <!-- Sección de Cards/Iconos de las Secciones -->
 <div class="dashboard-grid">
@@ -81,7 +81,7 @@
             return;
         }
         
-        fetch('/api/news/real')
+        fetch('/api/news?category=general&sentiment=all')
             .then(response => {
                 console.log('Response status:', response.status);
                 return response.json();

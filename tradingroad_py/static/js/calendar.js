@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const countrySelect = document.getElementById('country-select');
     const applyFiltersBtn = document.getElementById('apply-filters');
     const calendarData = document.getElementById('calendar-data');
+    const timezoneSelect = document.getElementById('timezone-select');
+    const currentTimeDisplay = document.getElementById('current-time');
+    
+    // Variable global para zona horaria actual
+    let currentTimezone = +2; // UTC+2 por defecto
 
     // Inicializar fechas
     const today = new Date();
@@ -48,8 +53,43 @@ document.addEventListener('DOMContentLoaded', function () {
         endDateInput.valueAsDate = oneMonthLater;
     });
 
-    // Event Listener para botón de aplicar filtros
+    // Event Listeners para filtros
     applyFiltersBtn.addEventListener('click', loadCalendarData);
+    
+    // Event Listener para cambio de zona horaria
+    timezoneSelect.addEventListener('change', function() {
+        currentTimezone = parseInt(this.value);
+        updateCurrentTime();
+        loadCalendarData(); // Recargar datos con nueva zona horaria
+    });
+    
+    // Función para actualizar la hora actual
+    function updateCurrentTime() {
+        const now = new Date();
+        const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const targetTime = new Date(utcTime + (currentTimezone * 3600000));
+        
+        const timeString = targetTime.toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        
+        const timezoneText = currentTimezone >= 0 ? `+${currentTimezone}` : `${currentTimezone}`;
+        currentTimeDisplay.textContent = `Hora actual (UTC${timezoneText}): ${timeString}`;
+    }
+    
+    // Función para convertir fecha a zona horaria seleccionada
+    function convertToTimezone(dateString) {
+        const date = new Date(dateString);
+        const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
+        const targetTime = new Date(utcTime + (currentTimezone * 3600000));
+        return targetTime;
+    }
+    
+    // Inicializar reloj y actualizarlo cada segundo
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
 
     // Función para cargar datos del calendario
     function loadCalendarData() {
@@ -106,8 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Generar filas de la tabla
         let html = '';
         filteredData.forEach(item => {
-            const datetime = new Date(item.event_datetime);
-            const formattedDate = formatDate(datetime);
+            const formattedDate = formatDate(item.event_datetime);
 
             const impactClass = `impact-${item.impact.toLowerCase()}`;
 
@@ -127,8 +166,11 @@ document.addEventListener('DOMContentLoaded', function () {
         calendarData.innerHTML = html;
     }
 
-    // Función para formatear fecha
-    function formatDate(date) {
+    // Función para formatear fecha con zona horaria
+    function formatDate(dateString) {
+        // Convertir a la zona horaria seleccionada
+        const targetDate = convertToTimezone(dateString);
+        
         const options = {
             weekday: 'short',
             year: 'numeric',
@@ -137,7 +179,10 @@ document.addEventListener('DOMContentLoaded', function () {
             hour: '2-digit',
             minute: '2-digit'
         };
-        return date.toLocaleDateString('es-ES', options);
+        
+        const formattedDate = targetDate.toLocaleDateString('es-ES', options);
+        const timezoneText = currentTimezone >= 0 ? `+${currentTimezone}` : `${currentTimezone}`;
+        return `${formattedDate} (UTC${timezoneText})`;
     }
 
     // Función para obtener nombre de país en español

@@ -209,45 +209,82 @@ class TraderAlphaAssistant {
     scrollToBottom() {
         if (!this.messagesContainer) return;
         
-        // Múltiples métodos de scroll para máxima compatibilidad
-        const performScroll = () => {
-            const container = this.messagesContainer;
-            const maxScroll = container.scrollHeight - container.clientHeight;
+        const container = this.messagesContainer;
+        
+        // Asegurar que el contenedor sea scrolleable
+        this.ensureScrollable();
+        
+        // Función mejorada de scroll con múltiples intentos
+        const doScroll = () => {
+            const scrollHeight = container.scrollHeight;
+            const clientHeight = container.clientHeight;
+            const maxScroll = scrollHeight - clientHeight;
             
-            // Método 1: scrollTop directo
-            container.scrollTop = maxScroll;
-            
-            // Método 2: scrollTo con opciones
-            container.scrollTo({
-                top: maxScroll,
-                behavior: 'auto'
-            });
-            
-            // Método 3: scrollIntoView del último elemento
-            const lastMessage = container.lastElementChild;
-            if (lastMessage) {
-                lastMessage.scrollIntoView({ behavior: 'auto', block: 'end' });
+            if (maxScroll > 0) {
+                // Método directo - forzar scroll al final
+                container.scrollTop = scrollHeight + 1000; // Añadir extra por si acaso
+                
+                // ScrollIntoView como respaldo
+                const lastMessage = container.lastElementChild;
+                if (lastMessage) {
+                    lastMessage.scrollIntoView({ 
+                        behavior: 'instant', 
+                        block: 'end',
+                        inline: 'nearest'
+                    });
+                    
+                    // Scroll adicional después de scrollIntoView
+                    setTimeout(() => {
+                        container.scrollTop = container.scrollHeight;
+                    }, 10);
+                }
             }
         };
         
         // Ejecutar inmediatamente
-        performScroll();
+        doScroll();
         
-        // Ejecutar después de render
-        requestAnimationFrame(performScroll);
+        // Ejecutar después del render con múltiples intentos
+        requestAnimationFrame(() => {
+            doScroll();
+            
+            // Más intentos con diferentes delays
+            setTimeout(doScroll, 50);
+            setTimeout(doScroll, 100);
+            setTimeout(doScroll, 200);
+            
+            // Intento final después de que el contenido se haya cargado completamente
+            requestAnimationFrame(doScroll);
+        });
         
-        // Ejecutar después de un delay para contenido dinámico
-        setTimeout(performScroll, 100);
+        // Ejecutar después de delay para contenido dinámico
+        setTimeout(doScroll, 50);
+        setTimeout(doScroll, 150);
+    }
+
+    ensureScrollable() {
+        if (!this.messagesContainer) return;
+        
+        // Asegurar que el contenedor tenga las propiedades correctas
+        const container = this.messagesContainer;
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'hidden';
+        container.style.scrollBehavior = 'auto';
+        
+        // Asegurar altura máxima para que sea scrolleable
+        if (!container.style.maxHeight) {
+            container.style.maxHeight = '400px';
+        }
     }
 
     smoothScrollToBottom() {
         if (!this.messagesContainer) return;
         
+        this.ensureScrollable();
         const container = this.messagesContainer;
-        const maxScroll = container.scrollHeight - container.clientHeight;
         
         container.scrollTo({
-            top: maxScroll,
+            top: container.scrollHeight,
             behavior: 'smooth'
         });
     }
@@ -255,35 +292,33 @@ class TraderAlphaAssistant {
     forceScrollToBottom() {
         if (!this.messagesContainer) return;
         
-        // Sistema de scroll ultra-agresivo
+        // Sistema de scroll definitivo
         const container = this.messagesContainer;
-        let attempts = 0;
-        const maxAttempts = 10;
+        this.ensureScrollable();
         
-        const ultraScroll = () => {
-            const maxScroll = container.scrollHeight - container.clientHeight;
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        const forcedScroll = () => {
+            const scrollHeight = container.scrollHeight;
+            const clientHeight = container.clientHeight;
             
-            // Forzar scroll de múltiples maneras
-            container.scrollTop = maxScroll + 1000; // Scroll extra para asegurar
-            container.scrollTo(0, maxScroll + 1000);
+            // Scroll directo al final
+            container.scrollTop = scrollHeight;
             
-            // ScrollIntoView del último elemento
-            const lastMessage = container.lastElementChild;
-            if (lastMessage) {
-                lastMessage.scrollIntoView({ behavior: 'auto', block: 'end' });
-            }
+            // Verificar si llegó al final
+            const currentScroll = container.scrollTop;
+            const expectedScroll = scrollHeight - clientHeight;
+            const isAtBottom = Math.abs(currentScroll - expectedScroll) <= 5;
             
             attempts++;
             
-            // Verificar si realmente llegó al final
-            const isAtBottom = container.scrollTop >= (container.scrollHeight - container.clientHeight - 5);
-            
             if (!isAtBottom && attempts < maxAttempts) {
-                setTimeout(ultraScroll, 50);
+                requestAnimationFrame(forcedScroll);
             }
         };
         
-        requestAnimationFrame(ultraScroll);
+        forcedScroll();
     }
 
     setupScrollDetection() {

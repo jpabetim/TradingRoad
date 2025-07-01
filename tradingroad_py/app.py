@@ -1335,6 +1335,126 @@ Si preguntan por análisis técnico:
 Conecto múltiples fuentes de información (técnico + fundamental + sentiment + derivados) para dar una visión 360° del mercado crypto.
 """
 
+def get_analysis_api_key():
+    """Obtiene la API key específica para análisis"""
+    # Prioridad: análisis específica > general
+    api_key = (
+        os.getenv('ANALYSIS_API_KEY') or
+        os.getenv('VITE_ANALYSIS_API_KEY') or
+        os.getenv('VITE_GEMINI_API_KEY') or
+        os.getenv('GEMINI_API_KEY')
+    )
+    
+    if api_key:
+        print(f"[Analysis] Usando API key: {api_key[:20]}... (longitud: {len(api_key)})")
+    else:
+        print("[Analysis] No se encontró API key")
+    
+    return api_key
+
+def get_current_market_prices(user_query):
+    """Obtener precios actuales de mercado basados en la consulta del usuario"""
+    try:
+        import ccxt
+        
+        # Buscar símbolos comunes en la consulta
+        symbols_to_check = []
+        query_lower = user_query.lower()
+        
+        # Mapeo de menciones comunes a símbolos
+        symbol_mappings = {
+            'btc': 'BTCUSDT',
+            'bitcoin': 'BTCUSDT',
+            'eth': 'ETHUSDT', 
+            'ethereum': 'ETHUSDT',
+            'bnb': 'BNBUSDT',
+            'ada': 'ADAUSDT',
+            'cardano': 'ADAUSDT',
+            'xrp': 'XRPUSDT',
+            'ripple': 'XRPUSDT',
+            'sol': 'SOLUSDT',
+            'solana': 'SOLUSDT',
+            'avax': 'AVAXUSDT',
+            'avalanche': 'AVAXUSDT'
+        }
+        
+        # Buscar símbolos mencionados
+        for mention, symbol in symbol_mappings.items():
+            if mention in query_lower:
+                symbols_to_check.append(symbol)
+        
+        # Si no se mencionan símbolos específicos, usar los principales
+        if not symbols_to_check:
+            # Solo incluir BTC y ETH por defecto si la consulta es sobre mercado en general
+            if any(word in query_lower for word in ['mercado', 'crypto', 'precio', 'trading', 'análisis']):
+                symbols_to_check = ['BTCUSDT', 'ETHUSDT']
+        
+        if not symbols_to_check:
+            return ""
+        
+        # Crear exchange Binance simple para obtener precios
+        try:
+            exchange = ccxt.binance({
+                'sandbox': False,
+                'enableRateLimit': True,
+            })
+            
+            price_info = []
+            for symbol in symbols_to_check[:4]:  # Limitar a 4 símbolos
+                try:
+                    ticker = exchange.fetch_ticker(symbol)
+                    price = ticker['last']
+                    change_24h = ticker['percentage'] or 0
+                    
+                    price_info.append(f"- {symbol}: ${price:,.2f} ({change_24h:+.2f}%)")
+                except Exception as e:
+                    print(f"Error obteniendo precio de {symbol}: {e}")
+                    continue
+            
+            return "\n".join(price_info) if price_info else ""
+            
+        except Exception as e:
+            print(f"Error inicializando exchange: {e}")
+            return ""
+        
+    except Exception as e:
+        print(f"Error en get_current_market_prices: {e}")
+        return ""
+
+def get_traderalpha_api_key():
+    """Obtiene la API key específica para TraderAlpha"""
+    # Prioridad: TraderAlpha específica > general
+    api_key = (
+        os.getenv('TRADERALPHA_API_KEY') or
+        os.getenv('VITE_TRADERALPHA_API_KEY') or
+        os.getenv('VITE_GEMINI_API_KEY') or
+        os.getenv('GEMINI_API_KEY')
+    )
+    
+    if api_key:
+        print(f"[TraderAlpha] Usando API key: {api_key[:20]}... (longitud: {len(api_key)})")
+    else:
+        print("[TraderAlpha] No se encontró API key")
+    
+    return api_key
+
+def get_translate_api_key():
+    """Obtiene la API key específica para traducción"""
+    # Prioridad: traducción específica > general
+    api_key = (
+        os.getenv('TRANSLATE_API_KEY') or
+        os.getenv('VITE_TRANSLATE_API_KEY') or
+        os.getenv('VITE_GEMINI_API_KEY') or
+        os.getenv('GEMINI_API_KEY')
+    )
+    
+    if api_key:
+        print(f"[Traducción] Usando API key: {api_key[:20]}... (longitud: {len(api_key)})")
+    else:
+        print("[Traducción] No se encontró API key")
+    
+    return api_key
+
 @app.route('/api/ask_traderalpha', methods=['POST'])
 def ask_traderalpha():
     try:
@@ -1344,37 +1464,59 @@ def ask_traderalpha():
         if not user_query:
             return jsonify({"error": "No se proporcionó ninguna consulta."}), 400
         
-        # Configuración robusta de API key con múltiples fallbacks
-        api_key = None
+        # Obtener API key usando función helper
+        api_key = get_traderalpha_api_key()
         
-        # 1. Primero intentar TRADERALPHA_API_KEY específica
-        api_key = os.getenv('TRADERALPHA_API_KEY')
-        
-        # 2. Fallback a VITE_GEMINI_API_KEY
-        if not api_key:
-            api_key = os.getenv('VITE_GEMINI_API_KEY')
-        
-        # 3. Verificar que tengamos una clave válida
+        # 5. Verificar que tengamos una clave válida
         if not api_key or api_key == 'TU_CLAVE_API_DE_GEMINI_AQUI':
-            return jsonify({
-                "error": "API Key no configurada. Por favor configura TRADERALPHA_API_KEY o VITE_GEMINI_API_KEY en las variables de entorno."
-            }), 500
+            error_msg = "API Key no configurada. Por favor configura una de estas variables de entorno: TRADERALPHA_API_KEY, VITE_TRADERALPHA_API_KEY, VITE_GEMINI_API_KEY, o GEMINI_API_KEY"
+            print(f"[TraderAlpha ERROR] {error_msg}")
+            return jsonify({"error": error_msg}), 500
         
         # Configurar la API key
-        genai.configure(api_key=api_key)
+        try:
+            genai.configure(api_key=api_key)
+            print(f"[TraderAlpha] API configurada correctamente")
+        except Exception as config_error:
+            error_msg = f"Error configurando API de Gemini: {str(config_error)}"
+            print(f"[TraderAlpha ERROR] {error_msg}")
+            return jsonify({"error": error_msg}), 500
         
         # Usar GenerativeModel sin system_instruction para evitar incompatibilidad
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        try:
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            print(f"[TraderAlpha] Modelo creado correctamente")
+        except Exception as model_error:
+            error_msg = f"Error creando modelo Gemini: {str(model_error)}"
+            print(f"[TraderAlpha ERROR] {error_msg}")
+            return jsonify({"error": error_msg}), 500
+        
+        # Obtener precios actuales si la consulta incluye símbolos específicos
+        current_prices = get_current_market_prices(user_query)
+        price_context = f"\n\n**PRECIOS ACTUALES (tiempo real):**\n{current_prices}" if current_prices else ""
         
         # Combinar el prompt del sistema con la consulta del usuario
-        full_prompt = f"{TRADERALPHA_GENERAL_PROMPT}\n\nPregunta del usuario: {user_query}"
+        full_prompt = f"{TRADERALPHA_GENERAL_PROMPT}{price_context}\n\nPregunta del usuario: {user_query}"
+        print(f"[TraderAlpha] Enviando consulta (longitud: {len(full_prompt)})")
         
-        response = model.generate_content(full_prompt)
+        # Generar contenido con manejo de errores robusto
+        try:
+            response = model.generate_content(full_prompt)
+            print(f"[TraderAlpha] Respuesta generada exitosamente")
+        except Exception as generation_error:
+            error_msg = f"Error generando contenido: {str(generation_error)}"
+            print(f"[TraderAlpha ERROR] {error_msg}")
+            return jsonify({"error": error_msg}), 500
         
         # Verificar que la respuesta tenga contenido
-        response_text = response.text if hasattr(response, 'text') and response.text else "Lo siento, no pude generar una respuesta en este momento."
-        
-        return jsonify({"response": response_text})
+        try:
+            response_text = response.text if hasattr(response, 'text') and response.text else "Lo siento, no pude generar una respuesta en este momento."
+            print(f"[TraderAlpha] Respuesta procesada (longitud: {len(response_text)})")
+            return jsonify({"response": response_text})
+        except Exception as text_error:
+            error_msg = f"Error procesando respuesta: {str(text_error)}"
+            print(f"[TraderAlpha ERROR] {error_msg}")
+            return jsonify({"error": "Error procesando la respuesta de la IA"}), 500
         
     except Exception as e:
         error_msg = str(e)
@@ -1396,8 +1538,45 @@ def ask_traderalpha():
 
 # ===== FUNCIONES DE NOTICIAS REALES =====
 
+def translate_to_spanish(text):
+    """Traducir texto al español usando Google Gemini"""
+    try:
+        # Configuración simplificada para traducción
+        if not text or len(text.strip()) == 0:
+            return text
+            
+        # Obtener API key usando función helper
+        api_key = get_translate_api_key()
+            
+        if not api_key:
+            print("Error en traducción: No se encontró API key")
+            return text
+            
+        # Configurar Gemini
+        genai.configure(api_key=api_key)
+        
+        # Prompt específico para traducción directa
+        prompt = f"""Traduce SOLO el siguiente texto al español. Responde ÚNICAMENTE con la traducción, sin explicaciones ni opciones:
+
+{text}
+
+Traducción:"""
+        
+        # Usar modelo moderno para traducción
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        
+        if response and response.text:
+            return response.text.strip()
+        else:
+            return text  # Devolver original si falla
+            
+    except Exception as e:
+        print(f"Error en traducción: {e}")
+        return text  # Devolver texto original si falla la traducción
+
 def get_finnhub_news():
-    """Obtener noticias de Finnhub con parámetros mejorados"""
+    """Obtener noticias de Finnhub con parámetros mejorados y traducción al español"""
     try:
         url = f"{FINNHUB_BASE_URL}/news"
         params = {
@@ -1415,11 +1594,22 @@ def get_finnhub_news():
         
         formatted_news = []
         for item in news_data[:8]:  # Tomar 8 para tener más opciones
+            title = item.get('headline', 'Sin título')
+            summary = item.get('summary', 'Sin descripción')
+            
+            # Traducir título y descripción
+            translated_title = translate_to_spanish(title)
+            translated_summary = translate_to_spanish(summary[:200] + '...' if len(summary) > 200 else summary)
+            
+            # Analizar sentimiento básico por palabras clave
+            sentiment = analyze_single_news_sentiment(translated_title + ' ' + translated_summary)
+            
             formatted_news.append({
-                'title': item.get('headline', 'Sin título'),
-                'description': item.get('summary', 'Sin descripción')[:200] + '...' if len(item.get('summary', '')) > 200 else item.get('summary', 'Sin descripción'),
+                'title': translated_title,
+                'description': translated_summary,
                 'source': item.get('source', 'Finnhub'),
                 'time': format_news_time(item.get('datetime', 0)),
+                'sentiment': sentiment,
                 'url': item.get('url', '#')
             })
         
@@ -1455,11 +1645,23 @@ def get_fmp_news():
                 items = news_data.get('content', news_data.get('articles', []))[:8]
             
             for item in items:
+                # Traducir título y descripción
+                title = item.get('title', 'Sin título')
+                description = item.get('content', 'Sin descripción')
+                
+                # Truncar descripción si es muy larga
+                if len(description) > 200:
+                    description = description[:200] + '...'
+                
+                translated_title = translate_to_spanish(title)
+                translated_description = translate_to_spanish(description)
+                
                 formatted_news.append({
-                    'title': item.get('title', 'Sin título'),
-                    'description': item.get('content', 'Sin descripción')[:200] + '...' if len(item.get('content', '')) > 200 else item.get('content', 'Sin descripción'),
-                    'source': item.get('site', 'FMP'),
-                    'time': format_news_time_from_date(item.get('publishedDate', '')),
+                    'title': translated_title,
+                    'description': translated_description,
+                    'source': item.get('site', 'Financial Modeling Prep'),
+                    'time': format_news_time_from_date(item.get('date', '')),
+                    'sentiment': analyze_single_news_sentiment(translated_title + ' ' + translated_description),
                     'url': item.get('url', '#')
                 })
             
@@ -1490,11 +1692,23 @@ def get_fmp_stock_news():
             
             formatted_news = []
             for item in news_data[:6]:
+                # Traducir título y descripción
+                title = item.get('title', 'Sin título')
+                description = item.get('text', 'Sin descripción')
+                
+                # Truncar descripción si es muy larga
+                if len(description) > 200:
+                    description = description[:200] + '...'
+                
+                translated_title = translate_to_spanish(title)
+                translated_description = translate_to_spanish(description)
+                
                 formatted_news.append({
-                    'title': item.get('title', 'Sin título'),
-                    'description': item.get('text', 'Sin descripción')[:200] + '...' if len(item.get('text', '')) > 200 else item.get('text', 'Sin descripción'),
-                    'source': item.get('site', 'FMP'),
-                    'time': format_news_time_from_date(item.get('publishedDate', '')),
+                    'title': translated_title,
+                    'description': translated_description,
+                    'source': item.get('site', 'Financial Modeling Prep'),
+                    'time': format_news_time_from_date(item.get('date', '')),
+                    'sentiment': analyze_single_news_sentiment(translated_title + ' ' + translated_description),
                     'url': item.get('url', '#')
                 })
             
@@ -1535,9 +1749,16 @@ def format_news_time_from_date(date_string):
         if not date_string:
             return "Hace varias horas"
         
-        # Parsear fecha en formato ISO
-        news_time = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
-        now = datetime.now(timezone.utc)
+        # Manejar diferentes formatos de fecha
+        if 'T' in date_string or 'Z' in date_string:
+            # Formato ISO (ej: 2025-07-01T05:40:52Z)
+            news_time = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+            now = datetime.now(timezone.utc)
+        else:
+            # Formato FMP (ej: 2025-07-01 05:40:52)
+            news_time = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+            now = datetime.now()
+        
         diff = now - news_time
         
         if diff.total_seconds() < 3600:  # Menos de 1 hora
@@ -1601,11 +1822,11 @@ def get_real_news():
             print("Usando noticias fallback")
             final_news = get_fallback_news()
             
-        return jsonify({"news": final_news})
+        return final_news
         
     except Exception as e:
         print(f"Error en endpoint de noticias RSS: {e}")
-        return jsonify({"news": get_fallback_news()})
+        return get_fallback_news()
 
 def get_fallback_news():
     """Noticias de respaldo cuando las APIs fallan"""
@@ -1652,7 +1873,35 @@ def filter_news_by_category_and_sentiment(news_list, category, sentiment_filter)
                 if any(keyword in title_lower or keyword in desc_lower for keyword in keywords):
                     filtered.append(news)
     
+    # Filtrar por sentimiento
+    if sentiment_filter != 'all':
+        sentiment_filtered = []
+        for news in filtered:
+            news_sentiment = news.get('sentiment', 'neutral')
+            if news_sentiment == sentiment_filter:
+                sentiment_filtered.append(news)
+        filtered = sentiment_filtered
+    
     return filtered
+
+def analyze_single_news_sentiment(text):
+    """Análizar sentimiento de un texto individual"""
+    if not text:
+        return 'neutral'
+    
+    text = text.lower()
+    positive_words = ['ganancias', 'subida', 'récord', 'fortaleza', 'positivo', 'crecimiento', 'alza', 'optimista', 'beneficios']
+    negative_words = ['caída', 'pérdidas', 'declive', 'preocupación', 'riesgo', 'baja', 'negativo', 'crisis', 'problemas']
+    
+    pos_matches = sum(1 for word in positive_words if word in text)
+    neg_matches = sum(1 for word in negative_words if word in text)
+    
+    if pos_matches > neg_matches:
+        return 'positive'
+    elif neg_matches > pos_matches:
+        return 'negative'
+    else:
+        return 'neutral'
 
 def analyze_news_sentiment(news_list):
     """Análisis básico de sentimiento de noticias"""

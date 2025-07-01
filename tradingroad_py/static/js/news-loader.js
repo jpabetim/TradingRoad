@@ -19,15 +19,20 @@ class NewsLoader {
             console.log('Contenedor encontrado, cargando noticias...');
             this.loadNews();
         } else {
-            console.warn('news-container no encontrado, reintentando en 500ms...');
-            setTimeout(() => this.tryInitialize(), 500);
+            this.retryCount = (this.retryCount || 0) + 1;
+            if (this.retryCount < 20) {
+                console.warn(`news-container no encontrado, reintentando (${this.retryCount}/20) en 500ms...`);
+                setTimeout(() => this.tryInitialize(), 500);
+            } else {
+                console.error('news-container no encontrado después de 20 intentos');
+            }
         }
     }
 
     async loadNews() {
         console.log('Iniciando carga de noticias...');
         try {
-            const response = await fetch('/api/news/real');
+            const response = await fetch('/api/news?category=general&sentiment=all');
             console.log('Response status:', response.status);
             const data = await response.json();
             console.log('Datos recibidos:', data);

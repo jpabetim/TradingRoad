@@ -24,7 +24,7 @@ function hideAllSpinners() {
 // FUNCIONES DE FETCH
 // ==============================================================================
 async function fetchDeribitDataForCharts() {
-    let url = `http://127.0.0.1:8088/api/data/${currentCurrency}`;
+    let url = `/api/data/${currentCurrency}`;
     if (currentExpiration !== 'all') { url += `?expiration=${currentExpiration}`; }
     
     return fetch(url).then(res => res.json()).then(data => {
@@ -47,7 +47,7 @@ async function fetchDeribitDataForCharts() {
 }
 
 async function populateExpirations() {
-    return fetch(`http://127.0.0.1:8088/api/expirations/${currentCurrency}`).then(res => res.json()).then(expirations => {
+    return fetch(`/api/expirations/${currentCurrency}`).then(res => res.json()).then(expirations => {
         const selector = document.getElementById('expiration-selector');
         selector.innerHTML = '<option value="all">Todos los Vencimientos</option>';
         if (expirations && expirations.length > 0) {
@@ -64,7 +64,7 @@ async function populateExpirations() {
 
 async function fetchConsolidatedMetrics() {
     try {
-        const response = await fetch(`http://127.0.0.1:8088/api/consolidated-metrics/${currentCurrency}`);
+        const response = await fetch(`/api/consolidated-metrics/${currentCurrency}`);
         if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         const oiFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -99,21 +99,21 @@ async function fetchConsolidatedMetrics() {
 }
 
 async function fetchBinanceSentimentDataForCharts() {
-    return fetch(`http://127.0.0.1:8088/api/sentiment/${currentCurrency}`)
+    return fetch(`/api/sentiment/${currentCurrency}`)
         .then(res => res.json())
         .then(data => renderSentimentCharts(data))
         .catch(err => console.error("Error Sentimiento Binance:", err));
 }
 
 async function fetchFundingRateHistory() {
-     return fetch(`http://127.0.0.1:8088/api/funding-rate-history/${currentCurrency}`)
+     return fetch(`/api/funding-rate-history/${currentCurrency}`)
         .then(res => res.json())
         .then(data => drawFundingRateHistoryChart(data))
         .catch(err => console.error("Error Historial Funding Rate:", err));
 }
 
 async function fetchOrderBook() {
-    return fetch(`http://127.0.0.1:8088/api/order-book/${currentCurrency}?step=${currentOrderBookStep}`)
+    return fetch(`/api/order-book/${currentCurrency}?step=${currentOrderBookStep}`)
         .then(res => res.json())
         .then(data => updateOrderBookUI(data))
         .catch(err => console.error("Error Libro de Órdenes:", err));
@@ -121,7 +121,7 @@ async function fetchOrderBook() {
 
 async function fetchDvolHistory() {
     console.log(`📊 FetchDvolHistory: Starting for ${currentCurrency}`);
-    const url = `http://127.0.0.1:8088/api/dvol-history/${currentCurrency}`;
+    const url = `/api/dvol-history/${currentCurrency}`;
     console.log(`📊 FetchDvolHistory: URL = ${url}`);
     
     return fetch(url)
@@ -336,27 +336,27 @@ async function openChartInModal(chartType) {
     switch (chartType) {
         case 'oi-history':
             title = 'Historial Extendido - Interés Abierto (Binance)';
-            url = `http://127.0.0.1:8088/api/sentiment/${currentCurrency}?limit=500`;
+            url = `/api/sentiment/${currentCurrency}?limit=500`;
             chartDrawer = (data) => drawLargeOiChart(data.open_interest_history);
             break;
         case 'ls-ratio':
             title = 'Historial Extendido - Ratio Long/Short (Binance)';
-            url = `http://127.0.0.1:8088/api/sentiment/${currentCurrency}?limit=500`;
+            url = `/api/sentiment/${currentCurrency}?limit=500`;
             chartDrawer = (data) => drawLargeLsRatioChart(data.long_short_ratio);
             break;
         case 'dvol':
             title = 'Historial Extendido - Volatilidad DVOL (Deribit)';
-            url = `http://127.0.0.1:8088/api/dvol-history/${currentCurrency}?days=365`;
+            url = `/api/dvol-history/${currentCurrency}?days=365`;
             chartDrawer = (data) => drawLargeDvolChart(data);
             break;
         case 'funding-rate':
             title = 'Historial Extendido - Tasa de Financiación (Binance)';
-            url = `http://127.0.0.1:8088/api/funding-rate-history/${currentCurrency}?limit=500`;
+            url = `/api/funding-rate-history/${currentCurrency}?limit=500`;
             chartDrawer = (data) => drawLargeFundingRateChart(data);
             break;
         case 'expirations':
             title = 'Interés Abierto Global por Vencimiento';
-            url = `http://127.0.0.1:8088/api/data/${currentCurrency}`;
+            url = `/api/data/${currentCurrency}`;
             chartDrawer = (data) => drawLargeBarChart(data.expiration_chart_data, 'Open Interest', '#36A2EB');
             break;
     }

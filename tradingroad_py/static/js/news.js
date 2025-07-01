@@ -33,20 +33,104 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
 
-    // Simular una llamada a la API
-    function fetchNewsFromAPI(category, sentiment) {
-        // En una aplicación real, esta sería una llamada fetch() a la API
-        fetch(`/api/news?category=${category}&sentiment=${sentiment}`)
-            .then(response => response.json())
-            .then(data => {
-                displayNews(data.news);
-                displaySentimentChart(data.sentiment);
-            })
-            .catch(error => {
-                console.error('Error al cargar las noticias:', error);
-                // Fallback a datos de ejemplo en caso de error
-                displayMockNews(category, sentiment);
-            });
+    // Obtener noticias reales de las APIs
+    async function fetchNewsFromAPI(category, sentiment) {
+        try {
+            console.log('Cargando noticias reales desde APIs...');
+            
+            // Usar el endpoint real de noticias que combina Finnhub y FMP
+            const response = await fetch(`/api/news?category=${category}&sentiment=${sentiment}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const responseData = await response.json();
+            console.log('Noticias obtenidas:', responseData);
+            
+            if (responseData.status === 'ok' && responseData.news && Array.isArray(responseData.news) && responseData.news.length > 0) {
+                // Las noticias ya vienen filtradas del backend
+                const newsData = responseData.news;
+                const sentimentData = responseData.sentiment || {};
+                
+                displayNews(newsData);
+                displaySentimentChart(sentimentData);
+            } else {
+                throw new Error('No se recibieron noticias válidas');
+            }
+            
+        } catch (error) {
+            console.error('Error al cargar noticias reales:', error);
+            
+            // Mostrar mensaje de error más informativo
+            if (newsList) {
+                newsList.innerHTML = `
+                    <div class="error-message">
+                        <h3>Error al cargar noticias</h3>
+                        <p>No se pudieron cargar las noticias en tiempo real.</p>
+                        <p>Error: ${error.message}</p>
+                        <button onclick="loadNews()" class="retry-btn">Reintentar</button>
+                    </div>
+                `;
+            }
+            
+            // Fallback a datos de ejemplo solo como último recurso
+            console.log('Usando noticias de respaldo...');
+            displayMockNews(category, sentiment);
+        }
+    }
+    
+    // Filtrar noticias por categoría
+    function filterNewsByCategory(news, category) {
+        if (category === 'all') return news;
+        
+        // Mapeo básico de categorías
+        const categoryKeywords = {
+            'markets': ['market', 'trading', 'index', 'dow', 'nasdaq', 's&p'],
+            'economy': ['economic', 'gdp', 'inflation', 'federal', 'fed', 'economy'],
+            'stocks': ['stock', 'equity', 'share', 'earnings', 'dividend'],
+            'crypto': ['bitcoin', 'crypto', 'blockchain', 'ethereum', 'btc', 'eth']
+        };
+        
+        if (!categoryKeywords[category]) return news;
+        
+        return news.filter(article => {
+            const text = (article.title + ' ' + article.description).toLowerCase();
+            return categoryKeywords[category].some(keyword => text.includes(keyword));
+        });
+    }
+    
+    // Análisis básico de sentimiento para noticias reales
+    function analyzeSentimentFromRealNews(news) {
+        const positiveWords = ['gain', 'rise', 'up', 'growth', 'profit', 'surge', 'boost', 'positive', 'strong'];
+        const negativeWords = ['fall', 'drop', 'down', 'loss', 'decline', 'crash', 'negative', 'weak', 'concern'];
+        
+        let positive = 0;
+        let negative = 0;
+        let neutral = 0;
+        
+        news.forEach(article => {
+            const text = (article.title + ' ' + article.description).toLowerCase();
+            
+            const positiveCount = positiveWords.reduce((count, word) => 
+                count + (text.match(new RegExp(word, 'g')) || []).length, 0);
+            const negativeCount = negativeWords.reduce((count, word) => 
+                count + (text.match(new RegExp(word, 'g')) || []).length, 0);
+            
+            if (positiveCount > negativeCount) {
+                positive++;
+            } else if (negativeCount > positiveCount) {
+                negative++;
+            } else {
+                neutral++;
+            }
+        });
+        
+        return {
+            positive: positive,
+            neutral: neutral, 
+            negative: negative
+        };
     }
 
     // Mostrar noticias en la interfaz
@@ -71,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p class="news-description">${news.description}</p>
                     <div class="news-meta">
                         <span class="news-source">${news.source}</span>
-                        <span class="news-date">${formatDate(news.date)}</span>
+                        <span class="news-date">${news.time}</span>
                         <span class="news-sentiment ${sentimentClass}">${capitalizeFirstLetter(news.sentiment)}</span>
                     </div>
                 </div>
@@ -220,18 +304,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Formateador de fechas
     function formatDate(dateStr) {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        if (!dateStr) return 'Fecha no disponible';
+        
+        try {
+            let date;
+            
+            // Si es un timestamp Unix (número)
+            if (typeof dateStr === 'number') {
+                date = new Date(dateStr * 1000);
+            } else {
+                // String de fecha
+                date = new Date(dateStr);
+            }
+            
+            // Verificar si la fecha es válida
+            if (isNaN(date.getTime())) {
+                return 'Fecha inválida';
+            }
+            
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            console.error('Error formateando fecha:', dateStr, error);
+            return 'Fecha no disponible';
+        }
     }
 
     // Capitalizar primera letra
     function capitalizeFirstLetter(string) {
+        if (!string || typeof string !== 'string') {
+            return 'Neutral';
+        }
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 });
