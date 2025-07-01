@@ -7,7 +7,7 @@ services:
     buildCommand: |
       pip install --upgrade pip && 
       pip install -r requirements.txt
-    startCommand: cd tradingroad_py && python start.py
+    startCommand: python run.py
     healthCheckPath: /dashboard
     envVars:
       - key: PYTHON_VERSION

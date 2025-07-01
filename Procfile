@@ -1,1 +1,1 @@
-web: cd tradingroad_py && python start.py
+web: python run.py

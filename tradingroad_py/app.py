@@ -1687,9 +1687,43 @@ def analyze_news_sentiment(news_list):
 
 if __name__ == '__main__':
     import argparse
+    import os
     
-    parser = argparse.ArgumentParser(description='TradingRoad Server')
-    parser.add_argument('--port', type=int, default=8088, help='Port to run the server on')
-    args = parser.parse_args()
+    # Obtener puerto desde variables de entorno (Render) o argumentos
+    port = int(os.environ.get('PORT', 8088))
+    debug = os.environ.get('DEBUG', 'false').lower() == 'true'
     
-    socketio.run(app, debug=True, port=args.port, host='0.0.0.0', allow_unsafe_werkzeug=True)
+    # Solo usar argparse si no estamos en producción
+    if not os.environ.get('PORT'):
+        parser = argparse.ArgumentParser(description='TradingRoad Server')
+        parser.add_argument('--port', type=int, default=8088, help='Port to run the server on')
+        args = parser.parse_args()
+        port = args.port
+        debug = True
+    
+    print(f"🚀 Starting TradingRoad Platform on port {port}")
+    print(f"🔧 Debug mode: {debug}")
+    print(f"🌍 Environment: {os.environ.get('FLASK_ENV', 'development')}")
+    
+    try:
+        # Configurar Flask para producción
+        app.config['DEBUG'] = debug
+        
+        # Ejecutar con socketio
+        socketio.run(
+            app, 
+            debug=debug, 
+            port=port, 
+            host='0.0.0.0', 
+            allow_unsafe_werkzeug=True,
+            log_output=True
+        )
+    except Exception as e:
+        print(f"❌ Error with SocketIO: {e}")
+        print("🔄 Falling back to Flask app without SocketIO...")
+        # Fallback sin socketio
+        app.run(
+            debug=debug,
+            port=port,
+            host='0.0.0.0'
+        )
