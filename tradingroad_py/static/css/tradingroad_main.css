@@ -1,0 +1,482 @@
+/* TradingRoad Main Styles - Professional Trading Interface */
+
+/* Variables de colores TradingRoad */
+:root {
+    /* Colores principales TradingRoad */
+    --tr-bg-primary: #0C111C;
+    --tr-bg-secondary: #131722;
+    --tr-bg-tertiary: #1E222D;
+    --tr-surface: #2A2E39;
+    --tr-surface-hover: #363A45;
+
+    /* Colores de acento TradingRoad */
+    --tr-accent: #2962FF;
+    --tr-accent-hover: #1E53E5;
+    --tr-accent-light: rgba(41, 98, 255, 0.12);
+    --tr-accent-ultra-light: rgba(41, 98, 255, 0.05);
+
+    /* Texto TradingRoad */
+    --tr-text-primary: #D1D4DC;
+    --tr-text-secondary: #868993;
+    --tr-text-muted: #5D606B;
+    --tr-text-white: #FFFFFF;
+
+    /* Bordes TradingRoad */
+    --tr-border: #2A2E39;
+    --tr-border-light: #363A45;
+    --tr-border-hover: #434651;
+
+    /* Estados de trading */
+    --tr-bull: #089981;
+    --tr-bear: #F23645;
+    --tr-warning: #FF9800;
+    --tr-info: #2196F3;
+
+    /* Sombras TradingRoad */
+    --tr-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --tr-shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.25);
+    --tr-shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+    /* Transiciones */
+    --tr-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --tr-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --tr-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset y base TradingRoad */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--tr-bg-primary);
+    color: var(--tr-text-primary);
+    font-size: 13px;
+    line-height: 1.4;
+    overflow-x: hidden;
+}
+
+/* Layout principal TradingRoad */
+.tradingroad-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--tr-bg-primary);
+}
+
+/* Barra superior TradingRoad - Diseño profesional */
+.tradingroad-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    background-color: var(--tr-bg-secondary);
+    border-bottom: 1px solid var(--tr-border);
+    padding: 0 16px;
+    z-index: 1000;
+    box-shadow: var(--tr-shadow);
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Logo y marca */
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--tr-text-white);
+    margin: 0;
+}
+
+.brand-logo {
+    height: 28px;
+    width: auto;
+}
+
+/* Selector de mercado */
+.market-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.select-control {
+    background-color: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    color: var(--tr-text-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    min-width: 100px;
+    transition: var(--tr-transition);
+}
+
+.select-control:hover {
+    border-color: var(--tr-border-hover);
+    background-color: var(--tr-surface-hover);
+}
+
+.select-control:focus {
+    outline: none;
+    border-color: var(--tr-accent);
+    box-shadow: 0 0 0 2px var(--tr-accent-ultra-light);
+}
+
+/* Búsqueda de símbolo */
+.symbol-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: var(--tr-transition);
+}
+
+.symbol-search:hover {
+    border-color: var(--tr-border-hover);
+}
+
+.symbol-search:focus-within {
+    border-color: var(--tr-accent);
+    box-shadow: 0 0 0 2px var(--tr-accent-ultra-light);
+}
+
+.symbol-search input {
+    background: transparent;
+    border: none;
+    color: var(--tr-text-primary);
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: 120px;
+    outline: none;
+}
+
+.symbol-search .btn-icon {
+    background: var(--tr-accent);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--tr-transition);
+}
+
+.symbol-search .btn-icon:hover {
+    background: var(--tr-accent-hover);
+}
+
+/* Controles de timeframe */
+.timeframe-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background-color: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.tf-btn {
+    background: transparent;
+    border: none;
+    color: var(--tr-text-secondary);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--tr-transition);
+    min-width: 32px;
+}
+
+.tf-btn:hover {
+    background-color: var(--tr-surface-hover);
+    color: var(--tr-text-primary);
+}
+
+.tf-btn.active {
+    background-color: var(--tr-accent);
+    color: white;
+}
+
+/* Botones principales */
+.btn-primary {
+    background: var(--tr-accent);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--tr-transition);
+}
+
+.btn-primary:hover {
+    background: var(--tr-accent-hover);
+}
+
+.btn-secondary {
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    color: var(--tr-text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--tr-transition);
+}
+
+.btn-secondary:hover {
+    background: var(--tr-surface-hover);
+    border-color: var(--tr-border-hover);
+}
+
+/* Contenido principal */
+.main-content {
+    flex: 1;
+    display: flex;
+    background-color: var(--tr-bg-primary);
+    overflow: hidden;
+}
+
+/* Panel de gráfico */
+.chart-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--tr-bg-secondary);
+    margin: 8px;
+    margin-right: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--tr-border);
+    overflow: hidden;
+}
+
+.chart-container {
+    flex: 1;
+    position: relative;
+    background-color: var(--tr-bg-secondary);
+}
+
+/* Panel lateral */
+.side-panel {
+    width: 320px;
+    background-color: var(--tr-bg-secondary);
+    border: 1px solid var(--tr-border);
+    margin: 8px;
+    margin-left: 4px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Tabs */
+.tab-container {
+    display: flex;
+    background-color: var(--tr-surface);
+    border-bottom: 1px solid var(--tr-border);
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--tr-text-secondary);
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--tr-transition);
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn:hover {
+    color: var(--tr-text-primary);
+    background-color: var(--tr-surface-hover);
+}
+
+.tab-btn.active {
+    color: var(--tr-accent);
+    border-bottom-color: var(--tr-accent);
+}
+
+.tab-content {
+    padding: 16px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+/* Indicadores */
+.indicators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.indicator-group {
+    background-color: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.indicator-header {
+    background-color: var(--tr-bg-tertiary);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tr-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--tr-transition);
+}
+
+.indicator-header:hover {
+    background-color: var(--tr-surface-hover);
+}
+
+.indicator-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tr-text-primary);
+}
+
+.indicator-content {
+    padding: 16px;
+    display: none;
+}
+
+.indicator-content.active {
+    display: block;
+}
+
+.indicator-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+.indicator-item:last-child {
+    border-bottom: none;
+}
+
+.indicator-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--tr-border);
+    border-radius: 3px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: var(--tr-transition);
+}
+
+.indicator-checkbox.checked {
+    background-color: var(--tr-accent);
+    border-color: var(--tr-accent);
+}
+
+.indicator-label {
+    font-size: 12px;
+    color: var(--tr-text-primary);
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .side-panel {
+        width: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tradingroad-topbar {
+        padding: 0 12px;
+    }
+    
+    .topbar-left {
+        gap: 16px;
+    }
+    
+    .timeframe-controls {
+        display: none;
+    }
+    
+    .side-panel {
+        position: absolute;
+        right: -320px;
+        top: 48px;
+        height: calc(100vh - 48px);
+        z-index: 999;
+        transition: right 0.3s ease;
+    }
+    
+    .side-panel.open {
+        right: 0;
+    }
+}
+
+/* Utilidades */
+.text-bull {
+    color: var(--tr-bull);
+}
+
+.text-bear {
+    color: var(--tr-bear);
+}
+
+.text-warning {
+    color: var(--tr-warning);
+}
+
+.text-info {
+    color: var(--tr-info);
+}
+
+.bg-bull {
+    background-color: var(--tr-bull);
+}
+
+.bg-bear {
+    background-color: var(--tr-bear);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

@@ -275,7 +275,7 @@ class TealStreetPro {
             console.log('Raw data received:', result.data);
             console.log('Candle data length:', this.candleData.length);
             console.log('First candle:', this.candleData[0]);
-            
+
             this.updateChart();
 
             // Mostrar notificación de éxito
@@ -346,40 +346,40 @@ class TealStreetPro {
 
         // Usar SocketIO para conexión en tiempo real
         this.websocket = io();
-        
+
         // Eventos de conexión
         this.websocket.on('connect', () => {
             console.log('WebSocket conectado');
             this.showNotification('Conectado a datos en tiempo real', 'success');
-            
+
             // Suscribirse a ticker y klines
             this.websocket.emit('subscribe_ticker', {
                 symbol: this.currentSymbol,
                 exchange: this.currentExchange
             });
-            
+
             this.websocket.emit('subscribe_klines', {
                 symbol: this.currentSymbol,
                 exchange: this.currentExchange,
                 interval: this.currentTimeframe
             });
         });
-        
+
         this.websocket.on('disconnect', () => {
             console.log('WebSocket desconectado');
             this.showNotification('Desconectado de datos en tiempo real', 'warning');
         });
-        
+
         // Actualización de ticker
         this.websocket.on('ticker_update', (data) => {
             this.updateTickerData(data);
         });
-        
+
         // Actualización de klines
         this.websocket.on('kline_update', (data) => {
             this.updateKlineData(data);
         });
-        
+
         this.websocket.on('status', (data) => {
             console.log('WebSocket status:', data.msg);
         });
@@ -478,7 +478,7 @@ class TealStreetPro {
         const symbolInfo = document.querySelector('.symbol-info .symbol-name');
         const priceInfo = document.querySelector('.current-price');
         const changeInfo = document.querySelector('.price-change');
-        
+
         if (symbolInfo) symbolInfo.textContent = data.symbol;
         if (priceInfo) priceInfo.textContent = `$${data.price.toLocaleString()}`;
         if (changeInfo) {
@@ -490,7 +490,7 @@ class TealStreetPro {
     // Actualizar datos de klines en tiempo real
     updateKlineData(data) {
         if (!data.is_closed) return; // Solo procesar velas cerradas
-        
+
         const newCandle = {
             timestamp: data.timestamp,
             open: data.open,
@@ -499,7 +499,7 @@ class TealStreetPro {
             close: data.close,
             volume: data.volume
         };
-        
+
         // Añadir o actualizar la última vela
         if (this.candleData.length > 0) {
             const lastCandle = this.candleData[this.candleData.length - 1];
@@ -517,7 +517,7 @@ class TealStreetPro {
         } else {
             this.candleData.push(newCandle);
         }
-        
+
         // Actualizar el gráfico
         this.updateChart();
     }
@@ -527,19 +527,19 @@ class TealStreetPro {
         console.log('updateChart called');
         console.log('this.chart:', this.chart);
         console.log('this.candleData.length:', this.candleData.length);
-        
+
         if (!this.chart) {
             console.error('Chart not initialized!');
             return;
         }
-        
+
         if (this.candleData.length === 0) {
             console.error('No candle data available!');
             return;
         }
 
         console.log('Processing candle data...');
-        
+
         const candleSeriesData = this.candleData.map(candle => [
             candle.open, candle.close, candle.low, candle.high
         ]);
@@ -819,6 +819,14 @@ class TealStreetPro {
             upper: upperBand,
             lower: lowerBand
         };
+    }
+
+    // Calcular Volume
+    calculateVolume(data) {
+        return data.map(candle => ({
+            time: candle.time,
+            volume: candle.volume || 0
+        }));
     }
 
     // Actualizar indicadores activos
@@ -1166,7 +1174,7 @@ class TealStreetPro {
     // Mostrar notificación
     showNotification(message, type = 'info') {
         console.log(`[${type.toUpperCase()}] ${message}`);
-        
+
         // Crear elemento de notificación
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -1176,7 +1184,7 @@ class TealStreetPro {
                 <span>${message}</span>
             </div>
         `;
-        
+
         // Añadir estilos CSS si no existen
         if (!document.getElementById('notification-styles')) {
             const styles = document.createElement('style');
@@ -1210,10 +1218,10 @@ class TealStreetPro {
             `;
             document.head.appendChild(styles);
         }
-        
+
         // Añadir al DOM
         document.body.appendChild(notification);
-        
+
         // Remover después de 3 segundos
         setTimeout(() => {
             notification.style.animation = 'slideIn 0.3s ease-out reverse';

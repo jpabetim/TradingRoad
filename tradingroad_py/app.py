@@ -89,6 +89,10 @@ def trading():
 def volatility():
     return render_template("volatility.html")
 
+@app.route("/analysis")
+def analysis():
+    return render_template("tradingroad_analysis.html")
+
 @app.route("/test-debug")
 def test_debug():
     return render_template("test-debug.html")
@@ -1274,247 +1278,57 @@ DATOS DE MERCADO EN TIEMPO REAL (incluye en tu análisis):
             'response': f'Lo siento, ocurrió un error: {str(e)}'
         }), 500
 
-# Función para obtener datos reales del mercado para el dashboard
-@app.route('/api/market/summary')
-def get_market_summary():
-    """
-    Obtiene un resumen real del mercado para el dashboard
-    """
+# Rutas adicionales para la página de análisis avanzado
+@app.route('/api/exchange/ticker/<exchange>')
+def get_exchange_ticker(exchange):
+    """Obtiene el ticker actual de un exchange específico"""
     try:
-        market_data = {}
+        symbol = request.args.get('symbol', 'BTCUSDT')
         
-        # Obtener datos de criptomonedas (Binance)
-        crypto_symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT']
-        for symbol in crypto_symbols:
-            try:
-                url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}"
-                response = requests.get(url, timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    clean_symbol = symbol.replace('USDT', '')
-                    market_data[clean_symbol] = {
-                        'price': float(data['lastPrice']),
-                        'change_24h': float(data['priceChangePercent']),
-                        'volume': float(data['volume'])
-                    }
-            except Exception as e:
-                print(f"Error obteniendo datos de {symbol}: {e}")
+        if exchange.lower() == 'binance':
+            url = f"https://api.binance.com/api/v3/ticker/24hr"
+            params = {'symbol': symbol}
+            response = requests.get(url, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                return jsonify({
+                    'symbol': data['symbol'],
+                    'price': float(data['lastPrice']),
+                    'change': float(data['priceChange']),
+                    'changePercent': float(data['priceChangePercent']),
+                    'volume': float(data['volume']),
+                    'high': float(data['highPrice']),
+                    'low': float(data['lowPrice'])
+                })
         
-        # Obtener datos de índices tradicionales (usando FMP)
-        try:
-            # S&P 500 aproximado usando SPY ETF
-            spy_url = f"https://financialmodelingprep.com/api/v3/quote/SPY?apikey={FMP_API_KEY}"
-            spy_response = requests.get(spy_url, timeout=5)
-            if spy_response.status_code == 200:
-                spy_data = spy_response.json()
-                if spy_data:
-                    spy_info = spy_data[0]
-                    market_data['SPY'] = {
-                        'price': spy_info['price'],
-                        'change_24h': spy_info['changesPercentage'],
-                        'volume': spy_info.get('volume', 0)
-                    }
-        except Exception as e:
-            print(f"Error obteniendo datos de SPY: {e}")
-            
-        # Si no hay datos reales suficientes, complementar con datos de ejemplo actualizados
-        if len(market_data) < 3:
-            default_data = {
-                'BTC': {'price': 67500.00, 'change_24h': 2.1, 'volume': 28500000000},
-                'ETH': {'price': 3650.00, 'change_24h': 1.8, 'volume': 15200000000},
-                'SOL': {'price': 145.30, 'change_24h': -0.5, 'volume': 2100000000},
-                'SPY': {'price': 458.20, 'change_24h': 0.3, 'volume': 85000000}
-            }
-            # Completar datos faltantes
-            for key, value in default_data.items():
-                if key not in market_data:
-                    market_data[key] = value
-        
+        # Fallback data
         return jsonify({
-            'status': 'success',
-            'data': market_data,
-            'timestamp': datetime.now().isoformat(),
-            'source': 'live' if len([k for k in market_data.keys() if 'BTC' in k or 'ETH' in k]) > 0 else 'fallback'
+            'symbol': symbol,
+            'price': 67500.00,
+            'change': 1200.50,
+            'changePercent': 1.81,
+            'volume': 28500000000,
+            'high': 68200.00,
+            'low': 66800.00
         })
         
     except Exception as e:
-        print(f"Error en market summary: {e}")
-        # Datos de fallback
-        fallback_data = {
-            'BTC': {'price': 67500.00, 'change_24h': 2.1, 'volume': 28500000000},
-            'ETH': {'price': 3650.00, 'change_24h': 1.8, 'volume': 15200000000},
-            'SOL': {'price': 145.30, 'change_24h': -0.5, 'volume': 2100000000},
-            'SPY': {'price': 458.20, 'change_24h': 0.3, 'volume': 85000000}
-        }
-        
+        print(f"Error obteniendo ticker de {exchange}: {e}")
         return jsonify({
-            'status': 'fallback',
-            'data': fallback_data,
-            'timestamp': datetime.now().isoformat(),
-            'source': 'fallback'
+            'symbol': symbol,
+            'price': 67500.00,
+            'change': 1200.50,
+            'changePercent': 1.81,
+            'volume': 28500000000,
+            'high': 68200.00,
+            'low': 66800.00
         })
 
-# Endpoint específico para datos de mercado en tiempo real para IA
-@app.route('/api/market/live')
-def get_live_market_data_endpoint():
-    """
-    Endpoint que devuelve datos de mercado en tiempo real para la IA
-    """
-    try:
-        market_data = get_live_market_data()
-        formatted_data = format_market_data_for_ai(market_data)
-        
-        return jsonify({
-            'status': 'success',
-            'raw_data': market_data,
-            'formatted_for_ai': formatted_data,
-            'timestamp': datetime.now().isoformat()
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'error': str(e),
-            'timestamp': datetime.now().isoformat()
-        }), 500
-
-# Función para traducir texto usando Google Translate API
-def translate_text(text, target_language='es'):
-    """Traduce texto usando Google Translate API"""
-    try:
-        translate_api_key = os.getenv('TRANSLATE_API_KEY') or os.getenv('GOOGLE_TRANSLATE_API_KEY') or os.getenv('VITE_TRANSLATE_API_KEY')
-        if not translate_api_key:
-            return text  # Si no hay API key, devolver texto original
-            
-        url = f"https://translation.googleapis.com/language/translate/v2?key={translate_api_key}"
-        
-        data = {
-            'q': text,
-            'target': target_language,
-            'format': 'text'
-        }
-        
-        response = requests.post(url, data=data, timeout=5)
-        if response.status_code == 200:
-            result = response.json()
-            if 'data' in result and 'translations' in result['data']:
-                return result['data']['translations'][0]['translatedText']
-    except Exception as e:
-        print(f"Error traduciendo texto: {e}")
-    
-    return text  # Devolver texto original si hay error
-
-@app.route('/api/proxy/binance/<path:endpoint>')
-def proxy_binance(endpoint):
-    """Proxy para la API de Binance"""
-    try:
-        # Construir la URL de Binance
-        binance_url = f"https://api.binance.com/api/v3/{endpoint}"
-        
-        # Reenviar los parámetros de query
-        params = dict(request.args)
-        
-        # Hacer la petición a Binance
-        response = requests.get(binance_url, params=params, timeout=10)
-        
-        # Devolver la respuesta JSON
-        if response.status_code == 200:
-            return jsonify(response.json())
-        else:
-            return jsonify({'error': 'Error en la API de Binance'}), response.status_code
-            
-    except Exception as e:
-        print(f"Error en proxy de Binance: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/proxy/binance/fapi/v1/<path:endpoint>')
-def proxy_binance_futures(endpoint):
-    """Proxy para la API de futuros de Binance"""
-    try:
-        # Construir la URL de Binance Futures
-        binance_url = f"https://fapi.binance.com/fapi/v1/{endpoint}"
-        
-        # Reenviar los parámetros de query
-        params = dict(request.args)
-        
-        # Hacer la petición a Binance
-        response = requests.get(binance_url, params=params, timeout=10)
-        
-        # Devolver la respuesta JSON
-        if response.status_code == 200:
-            return jsonify(response.json())
-        else:
-            return jsonify({'error': 'Error en la API de Binance Futures'}), response.status_code
-            
-    except Exception as e:
-        print(f"Error en proxy de Binance Futures: {e}")
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/proxy/bingx/<path:endpoint>')
-def proxy_bingx(endpoint):
-    """Proxy para la API de BingX"""
-    try:
-        # Construir la URL de BingX
-        bingx_url = f"https://open-api.bingx.com/{endpoint}"
-        
-        # Reenviar los parámetros de query
-        params = dict(request.args)
-        
-        # Hacer la petición a BingX
-        response = requests.get(bingx_url, params=params, timeout=10)
-        
-        # Devolver la respuesta JSON
-        if response.status_code == 200:
-            return jsonify(response.json())
-        else:
-            return jsonify({'error': 'Error en la API de BingX'}), response.status_code
-            
-    except Exception as e:
-        print(f"Error en proxy de BingX: {e}")
-        return jsonify({'error': str(e)}), 500
-
-# ==============================================================================
-# FIN DE RUTAS DE PROXY
-# ==============================================================================
-
-# Función auxiliar para traducir texto (mantener funcionalidad existente)
-def translate_text(text, target_language='en'):
-    """
-    Traduce texto usando Google Translate (versión básica)
-    """
-    if not text or target_language == 'en':
-        return text
-        
-    try:
-        import urllib.parse
-        # Usar API de traducción gratuita de LibreTranslate o similar
-        url = "https://libretranslate.de/translate"
-        data = {
-            'q': text,
-            'source': 'auto',
-            'target': target_language,
-            'format': 'text'
-        }
-        
-        response = requests.post(url, data=data, timeout=5)
-        if response.status_code == 200:
-            result = response.json()
-            if 'data' in result and 'translations' in result['data']:
-                return result['data']['translations'][0]['translatedText']
-    except Exception as e:
-        print(f"Error traduciendo texto: {e}")
-    
-    return text  # Devolver texto original si hay error
-
-@app.route('/analysis')
-def analysis():
-    """Servir página de análisis avanzado desde el backend"""
-    try:
-        return render_template('analysis_advanced.html')
-    except Exception as e:
-        print(f"Error sirviendo análisis: {e}")
-        # Fallback: si no existe el template, redirigir al frontend
-        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5179')
-        return redirect(frontend_url, code=302)
+# Ruta simple para manejar las solicitudes de Socket.IO (devolvemos error 404 limpio)
+@app.route('/socket.io/')
+def socket_io_fallback():
+    """Fallback para solicitudes de Socket.IO no implementadas"""
+    return jsonify({'error': 'Socket.IO not implemented'}), 404
 
 if __name__ == '__main__':
     # Solo ejecutar Flask directamente en desarrollo local
