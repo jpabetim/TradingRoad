@@ -32,6 +32,9 @@ beautifulsoup4==4.13.4
 feedparser==6.0.11
 lxml==6.0.0
 
+# Image Processing
+Pillow==10.2.0
+
 # Additional Dependencies
 Werkzeug==2.3.7
 click==8.1.7

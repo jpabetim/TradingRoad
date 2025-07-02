@@ -1,27 +1,28 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from flask_cors import CORS  # Importar Flask-CORS
 # from flask_socketio import SocketIO, emit  # Importar SocketIO - Comentado temporalmente
+import os
+import json
+import time
+import re
+import traceback
+from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
+from decimal import Decimal
+from collections import defaultdict
+from dotenv import load_dotenv
+
+# Importaciones de servicios (necesarias al inicio)
 from modules.news.news import NewsService
 from modules.calendar.calendar import CalendarService
 from config.config import ConfigService
 from modules.market.marketService import MarketService
+
+# Importaciones pesadas bajo demanda para ahorrar memoria inicial
 import pandas as pd
-import requests
-import asyncio
-import websockets
-import json
-import threading
-import os
-from datetime import datetime, timedelta, timezone
-import google.generativeai as genai
-from urllib.parse import quote
-import time
-import re
 import numpy as np
-import traceback
-from decimal import Decimal
-from collections import defaultdict
-from dotenv import load_dotenv
+import requests
+import google.generativeai as genai
 
 # Cargar variables de entorno al inicio
 load_dotenv('.env')
@@ -1513,8 +1514,14 @@ def analysis():
 
 if __name__ == '__main__':
     print("=== INICIANDO TRADEROAD FLASK APP ===")
-    print("Backend API: http://localhost:5007")
+    
+    # Obtener puerto de la variable de entorno (Render lo proporciona)
+    port = int(os.getenv('PORT', 5007))
+    debug_mode = os.getenv('DEBUG', 'false').lower() == 'true'
+    
+    print(f"Backend API: http://localhost:{port}")
+    print(f"Debug mode: {debug_mode}")
     print("==========================================")
     
-    # Ejecutar Flask en puerto 5007
-    app.run(debug=True, host='0.0.0.0', port=5007)
+    # Ejecutar Flask con configuración para producción
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)

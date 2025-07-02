@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "python run.py"
+    startCommand: "cd tradingroad_py && gunicorn --config ../gunicorn.conf.py app:app"
     healthCheckPath: "/dashboard"
     envVars:
       - key: PYTHON_VERSION
@@ -19,6 +19,11 @@ services:
         value: "false"
       - key: FRONTEND_URL
         value: "https://tradingroad-frontend.onrender.com"
+      # Optimización de memoria
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
       # Variables de API - agregar desde el dashboard de Render
       - key: GEMINI_API_KEY
         sync: false
