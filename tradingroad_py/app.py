@@ -1507,10 +1507,14 @@ def translate_text(text, target_language='en'):
 
 @app.route('/analysis')
 def analysis():
-    """Redirigir al análisis React - URL dinámica para desarrollo/producción"""
-    # En producción, usar variables de entorno para las URLs
-    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5179')
-    return redirect(frontend_url, code=302)
+    """Servir página de análisis directamente desde el backend"""
+    try:
+        return render_template('analysis.html')
+    except Exception as e:
+        print(f"Error sirviendo análisis: {e}")
+        # Fallback: si no existe el template, redirigir al frontend
+        frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5179')
+        return redirect(frontend_url, code=302)
 
 if __name__ == '__main__':
     print("=== INICIANDO TRADEROAD FLASK APP ===")
@@ -1519,7 +1523,11 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5007))
     debug_mode = os.getenv('DEBUG', 'false').lower() == 'true'
     
-    print(f"Backend API: http://localhost:{port}")
+    print(f"Backend API: Running on port {port}")
+    if os.getenv('RENDER'):
+        print(f"Production URL: https://{os.getenv('RENDER_SERVICE_NAME', 'tradingroad-python')}.onrender.com")
+    else:
+        print(f"Local URL: http://localhost:{port}")
     print(f"Debug mode: {debug_mode}")
     print("==========================================")
     
