@@ -4,7 +4,7 @@ Script de inicio optimizado para Render
 """
 import os
 import sys
-from app import app, socketio
+from app import app
 
 if __name__ == '__main__':
     # Configuración para producción
@@ -19,20 +19,12 @@ if __name__ == '__main__':
     app.config['DEBUG'] = debug
     
     try:
-        # Ejecutar con socketio para WebSocket support
-        socketio.run(
-            app, 
-            debug=debug, 
-            port=port, 
-            host='0.0.0.0',
-            allow_unsafe_werkzeug=True,
-            log_output=True
-        )
-    except Exception as e:
-        print(f"❌ Error starting server: {e}")
-        # Fallback: ejecutar sin socketio
+        # Ejecutar la aplicación Flask
         app.run(
             debug=debug,
             port=port,
             host='0.0.0.0'
         )
+    except Exception as e:
+        print(f"❌ Error starting server: {e}")
+        sys.exit(1)

@@ -1,39 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analista de Trading IA Wyckoff/SMC</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/src/index.css">
   <style>
     body {
-      font-family: 'Inter', sans-serif; /* A nice sans-serif font */
-      background-color: #0f172a; /* slate-900 */
-      color: #f1f5f9; /* slate-100 */
+      font-family: 'Inter', sans-serif;
+      /* A nice sans-serif font */
+      background-color: #0f172a;
+      /* slate-900 */
+      color: #f1f5f9;
+      /* slate-100 */
     }
+
     /* Custom scrollbar for better aesthetics */
     ::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
+
     ::-webkit-scrollbar-track {
-      background: #1e293b; /* slate-800 */
+      background: #1e293b;
+      /* slate-800 */
     }
+
     ::-webkit-scrollbar-thumb {
-      background: #334155; /* slate-700 */
+      background: #334155;
+      /* slate-700 */
       border-radius: 4px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
-      background: #475569; /* slate-600 */
+      background: #475569;
+      /* slate-600 */
     }
+
     /* Lightweight Charts tooltip override if needed */
     .tv-lightweight-charts-tooltip-container {
-      background-color: #1e293b !important; /* slate-800 */
-      color: #f1f5f9 !important; /* slate-100 */
-      border: 1px solid #334155 !important; /* slate-700 */
+      background-color: #1e293b !important;
+      /* slate-800 */
+      color: #f1f5f9 !important;
+      /* slate-100 */
+      border: 1px solid #334155 !important;
+      /* slate-700 */
     }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.4.0",
@@ -48,6 +63,7 @@
 </script>
 
 </head>
+
 <body class="bg-slate-900 text-slate-100">
   <div id="root"></div>
   <script>
@@ -63,4 +79,5 @@
   </script>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

@@ -16,6 +16,7 @@ numpy==1.26.2
 requests==2.31.0
 websockets==12.0
 websocket-client==1.6.4
+feedparser==6.0.10
 
 # Environment
 python-dotenv==1.0.0

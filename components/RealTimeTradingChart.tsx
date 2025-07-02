@@ -18,6 +18,7 @@ interface RealTimeTradingChartProps {
   analysisResult: GeminiAnalysisResult | null;
   onLatestChartInfoUpdate: (info: { price: number | null; volume?: number | null }) => void;
   onChartLoadingStateChange: (isLoading: boolean) => void;
+  onHistoricalDataUpdate?: (data: CandlestickData[]) => void; // New prop to expose OHLC data
   movingAverages: MovingAverageConfig[];
   theme: Theme;
   chartPaneBackgroundColor: string;
@@ -59,39 +60,63 @@ type CurrentProviderConfig = BinanceProviderConfig | BingXProviderConfig;
 
 const PROVIDERS_CONFIG: { binance: BinanceProviderConfig; bingx: BingXProviderConfig } = {
   binance: {
-        name: 'Binance Futures',
-        historicalApi: (symbol: string, interval: string, limit: number = 500) =>
-            // Usar el proxy de Flask para Binance
-            `/api/proxy/binance/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
-        ws: 'wss://stream.binance.com:9443/ws',
-        formatSymbol: (s: string) => s.replace(/[-/]/g, '').toUpperCase(),
-        parseHistorical: (data: any[]) => data.map(k => ({ time: k[0] / 1000 as UTCTimestamp, open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) })),
-        parseKline: (data) => ({ time: data.k.t / 1000 as UTCTimestamp, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) }),
-        parseTicker: (data, currentSymbol, currentProvider) => ({ price: parseFloat(data.c), changePercent: parseFloat(data.P), volume: parseFloat(data.v), quoteVolume: parseFloat(data.q), symbol: currentSymbol, provider: currentProvider })
+    type: 'binance',
+    name: 'Binance Futures',
+    historicalApi: (symbol: string, interval: string, limit: number = 500) =>
+      // Usar el proxy de Flask para Binance
+      `/api/proxy/binance/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+    wsKline: (symbol: string, interval: string) => `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_${interval}`,
+    wsTicker: (symbol: string) => `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@ticker`,
+    formatSymbol: (s: string) => s.replace(/[-/]/g, '').toUpperCase(),
+    parseHistorical: (data: any[]) => data.map(k => ({ time: k[0] / 1000 as UTCTimestamp, open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]) })),
+    parseKline: (data) => ({ time: data.k.t / 1000 as UTCTimestamp, open: parseFloat(data.k.o), high: parseFloat(data.k.h), low: parseFloat(data.k.l), close: parseFloat(data.k.c), volume: parseFloat(data.k.v) }),
+    parseTicker: (data, currentSymbol, currentProvider) => ({ price: parseFloat(data.c), changePercent: parseFloat(data.P), volume: parseFloat(data.v), quoteVolume: parseFloat(data.q), symbol: currentSymbol, provider: currentProvider })
   },
   bingx: {
-        name: 'BingX Futures',
-        historicalApi: (symbol:string, interval: string, limit: number = 500) =>
-            `/api/proxy/bingx/openApi/swap/v2/quote/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
-        ws: 'wss://open-api-swap.bingx.com/swap-market',
-        formatSymbol: (s: string) => s.replace(/[-/]/g, '-').toUpperCase(),
-        parseHistorical: (data: any) => {
-            // El proxy de Flask devuelve el JSON directamente.
-            // La estructura esperada es { code: 0, msg: "", data: [...] }
-            if (data && data.code === 0 && Array.isArray(data.data)) {
-                return data.data.map((k: any) => ({
-                    time: (k.time / 1000) as UTCTimestamp,
-                    open: parseFloat(k.open),
-                    high: parseFloat(k.high),
-                    low: parseFloat(k.low),
-                    close: parseFloat(k.close),
-                    volume: parseFloat(k.volume)
-                }));
-            }
-            console.error("Invalid response structure from BingX proxy:", data);
-            return [];
-        }
-    }
+    type: 'bingx',
+    name: 'BingX Futures',
+    historicalApi: (symbol: string, interval: string, limit: number = 500) =>
+      `/api/proxy/bingx/openApi/swap/v2/quote/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`,
+    wsBase: 'wss://open-api-swap.bingx.com/swap-market',
+    getKlineSubMessage: (symbol: string, interval: string) => JSON.stringify({ id: 'bingx_kline_sub', reqType: 'sub', dataType: `${symbol}@kline_${interval}` }),
+    getTickerSubMessage: (symbol: string) => JSON.stringify({ id: 'bingx_ticker_sub', reqType: 'sub', dataType: `${symbol}@ticker` }),
+    formatSymbol: (s: string) => s.replace(/[-/]/g, '-').toUpperCase(),
+    parseHistorical: (data: any) => {
+      // El proxy de Flask devuelve el JSON directamente.
+      // La estructura esperada es { code: 0, msg: "", data: [...] }
+      if (data && data.code === 0 && Array.isArray(data.data)) {
+        return data.data.map((k: any) => ({
+          time: (k.time / 1000) as UTCTimestamp,
+          open: parseFloat(k.open),
+          high: parseFloat(k.high),
+          low: parseFloat(k.low),
+          close: parseFloat(k.close),
+          volume: parseFloat(k.volume)
+        }));
+      }
+      console.error("Invalid response structure from BingX proxy:", data);
+      return [];
+    },
+    parseKline: (data) => {
+      // Implementar parseKline para BingX
+      return {
+        time: data.T / 1000 as UTCTimestamp,
+        open: parseFloat(data.o),
+        high: parseFloat(data.h),
+        low: parseFloat(data.l),
+        close: parseFloat(data.c),
+        volume: parseFloat(data.v)
+      };
+    },
+    parseTicker: (data, currentSymbol, currentProvider) => ({
+      price: parseFloat(data.c),
+      changePercent: parseFloat(data.P),
+      volume: parseFloat(data.v),
+      quoteVolume: parseFloat(data.q),
+      symbol: currentSymbol,
+      provider: currentProvider
+    })
+  }
 };
 
 export const calculateMA = (data: CandlestickData[], period: number): LineData[] => {
@@ -144,7 +169,7 @@ const getChartLayoutOptions = (
 
 const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
   dataSource, symbol: rawSymbol, timeframe: rawTimeframe, analysisResult,
-  onLatestChartInfoUpdate, onChartLoadingStateChange, movingAverages, theme,
+  onLatestChartInfoUpdate, onChartLoadingStateChange, onHistoricalDataUpdate, movingAverages, theme,
   chartPaneBackgroundColor, volumePaneHeight, showAiAnalysisDrawings,
   wSignalColor, wSignalOpacity, showWSignals
 }) => {
@@ -164,11 +189,20 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
 
   const providerConf = PROVIDERS_CONFIG[dataSource];
   const formattedSymbol = rawSymbol && providerConf ? providerConf.formatSymbol(rawSymbol) : '';
+
+  // Debug logging
+  console.log('RealTimeTradingChart Debug:', {
+    dataSource,
+    rawSymbol,
+    formattedSymbol,
+    providerConf: providerConf?.name
+  });
+
   const apiTimeframe = mapTimeframeToApi(rawTimeframe);
 
   const getStrokeColor = (type: AnalysisPointType | string, isFvg: boolean = false): string => {
     const opacity = isFvg ? '0.3' : '0.7';
-    switch(type) {
+    switch (type) {
       case AnalysisPointType.POI_OFERTA:
       case AnalysisPointType.FVG_BAJISTA:
         return `rgba(239, 68, 68, ${opacity})`;
@@ -181,10 +215,10 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
         return `rgba(249, 115, 22, ${opacity})`;
       case AnalysisPointType.BOS_ALCISTA:
       case AnalysisPointType.CHOCH_ALCISTA:
-          return `rgba(16, 185, 129, ${opacity})`;
+        return `rgba(16, 185, 129, ${opacity})`;
       case AnalysisPointType.BOS_BAJISTA:
       case AnalysisPointType.CHOCH_BAJISTA:
-          return `rgba(220, 38, 38, ${opacity})`;
+        return `rgba(220, 38, 38, ${opacity})`;
       case AnalysisPointType.EQUILIBRIUM:
         return `rgba(107, 114, 128, ${opacity})`;
       default: return `rgba(156, 163, 175, ${opacity})`;
@@ -224,16 +258,16 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
     const borderColor = theme === 'dark' ? THEME_COLORS.dark.border : THEME_COLORS.light.border;
 
     const chartBaseOptions: DeepPartial<ChartOptions> = {
-        ...getChartLayoutOptions(effectiveBackgroundColor, generalLayoutTextColor, gridColor, borderColor),
-        autoSize: true,
-        timeScale: {
-            timeVisible: true,
-            secondsVisible: apiTimeframe.includes('m'),
-        },
-        rightPriceScale: {
-            mode: PriceScaleMode.Logarithmic,
-            scaleMargins: { top: 0.1, bottom: 0.05 },
-        },
+      ...getChartLayoutOptions(effectiveBackgroundColor, generalLayoutTextColor, gridColor, borderColor),
+      autoSize: true,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: apiTimeframe.includes('m'),
+      },
+      rightPriceScale: {
+        mode: PriceScaleMode.Logarithmic,
+        scaleMargins: { top: 0.1, bottom: 0.05 },
+      },
     };
 
     if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
@@ -262,24 +296,24 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
     }
 
     const applyScaleStyles = (chart: IChartApi, txtColor: string, brdColor: string) => {
-        chart.priceScale('right').applyOptions({
-            textColor: txtColor,
-            borderColor: brdColor,
-        });
+      chart.priceScale('right').applyOptions({
+        textColor: txtColor,
+        borderColor: brdColor,
+      });
 
-        chart.timeScale().applyOptions({
-            borderColor: brdColor,
-        });
+      chart.timeScale().applyOptions({
+        borderColor: brdColor,
+      });
 
-        if (volumePriceScaleIdRef.current) {
-            chart.priceScale(volumePriceScaleIdRef.current).applyOptions({
-                borderColor: brdColor,
-            });
-        }
+      if (volumePriceScaleIdRef.current) {
+        chart.priceScale(volumePriceScaleIdRef.current).applyOptions({
+          borderColor: brdColor,
+        });
+      }
     };
 
     if (chartRef.current) {
-        applyScaleStyles(chartRef.current, scaleTextColor, borderColor);
+      applyScaleStyles(chartRef.current, scaleTextColor, borderColor);
     }
 
     const fetchHistoricalData = async () => {
@@ -288,9 +322,9 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
         console.log(`Fetching historical data from: ${apiUrl}`);
         const response = await fetch(apiUrl);
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}, Response: ${errorText}`);
-            throw new Error(`HTTP error! status: ${response.status}, Response: ${errorText}`);
+          const errorText = await response.text();
+          console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}, Response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, Response: ${errorText}`);
         }
         const rawData = await response.json();
         const parsedData = providerConf.parseHistorical(rawData);
@@ -311,6 +345,16 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
         if (parsedData.length > 0) {
           const lastPoint = parsedData[parsedData.length - 1];
           onLatestChartInfoUpdate({ price: lastPoint.close, volume: lastPoint.volume });
+        }
+
+        // Notify parent component about the historical data update
+        if (onHistoricalDataUpdate) {
+          console.log('📊 RealTimeTradingChart: Enviando datos iniciales al padre:', {
+            count: parsedData.length,
+            symbol: formattedSymbol,
+            sample: parsedData.slice(-2)
+          });
+          onHistoricalDataUpdate(parsedData);
         }
 
       } catch (error) {
@@ -339,57 +383,57 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
           try {
             let klineData;
             if (providerConf.type === 'bingx' && typeof event.data === "string" && event.data.includes("ping")) {
-                ws?.send(event.data.replace("ping", "pong")); return;
+              ws?.send(event.data.replace("ping", "pong")); return;
             } else if (providerConf.type === 'bingx' && event.data instanceof Blob) {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    try {
-                        const result = pako.inflate(new Uint8Array(reader.result as ArrayBuffer), { to: 'string' });
-                        const jsonData = JSON.parse(result);
-                        if (jsonData && jsonData.dataType && jsonData.dataType.startsWith(`${formattedSymbol}@kline_`)) {
-                             const kline = jsonData.data?.[0];
-                             if (kline) {
-                                 const newCandle = { time: kline.T / 1000 as UTCTimestamp, open: parseFloat(kline.o), high: parseFloat(kline.h), low: parseFloat(kline.l), close: parseFloat(kline.c), volume: parseFloat(kline.v) };
-                                 candlestickSeriesRef.current?.update(newCandle);
-                                 volumeSeriesRef.current?.update({ time: newCandle.time, value: newCandle.volume ?? 0, color: newCandle.close > newCandle.open ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'});
-                                 onLatestChartInfoUpdate({ price: newCandle.close, volume: newCandle.volume });
-                                 setHistoricalData(prev => {
-                                    const newData = [...prev];
-                                    const lastBar = newData[newData.length -1];
-                                    if(lastBar && lastBar.time === newCandle.time) {
-                                        newData[newData.length -1] = newCandle;
-                                    } else {
-                                        newData.push(newCandle);
-                                    }
-                                    return newData;
-                                 });
-                             }
+              const reader = new FileReader();
+              reader.onload = function () {
+                try {
+                  const result = pako.inflate(new Uint8Array(reader.result as ArrayBuffer), { to: 'string' });
+                  const jsonData = JSON.parse(result);
+                  if (jsonData && jsonData.dataType && jsonData.dataType.startsWith(`${formattedSymbol}@kline_`)) {
+                    const kline = jsonData.data?.[0];
+                    if (kline) {
+                      const newCandle = { time: kline.T / 1000 as UTCTimestamp, open: parseFloat(kline.o), high: parseFloat(kline.h), low: parseFloat(kline.l), close: parseFloat(kline.c), volume: parseFloat(kline.v) };
+                      candlestickSeriesRef.current?.update(newCandle);
+                      volumeSeriesRef.current?.update({ time: newCandle.time, value: newCandle.volume ?? 0, color: newCandle.close > newCandle.open ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)' });
+                      onLatestChartInfoUpdate({ price: newCandle.close, volume: newCandle.volume });
+                      setHistoricalData(prev => {
+                        const newData = [...prev];
+                        const lastBar = newData[newData.length - 1];
+                        if (lastBar && lastBar.time === newCandle.time) {
+                          newData[newData.length - 1] = newCandle;
+                        } else {
+                          newData.push(newCandle);
                         }
-                    } catch (e) { console.error('Error processing BingX binary message:', e); }
-                };
-                reader.readAsArrayBuffer(event.data);
-                return;
+                        return newData;
+                      });
+                    }
+                  }
+                } catch (e) { console.error('Error processing BingX binary message:', e); }
+              };
+              reader.readAsArrayBuffer(event.data);
+              return;
             } else {
-                const data = JSON.parse(event.data as string);
-                if (providerConf.type === 'binance' && data.e === 'kline') {
-                    klineData = providerConf.parseKline(data);
-                } else { return; }
+              const data = JSON.parse(event.data as string);
+              if (providerConf.type === 'binance' && data.e === 'kline') {
+                klineData = providerConf.parseKline(data);
+              } else { return; }
             }
 
             if (klineData) {
               candlestickSeriesRef.current?.update(klineData);
-              volumeSeriesRef.current?.update({ time: klineData.time, value: klineData.volume ?? 0, color: klineData.close > klineData.open ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'});
+              volumeSeriesRef.current?.update({ time: klineData.time, value: klineData.volume ?? 0, color: klineData.close > klineData.open ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)' });
               onLatestChartInfoUpdate({ price: klineData.close, volume: klineData.volume });
               setHistoricalData(prev => {
                 const newData = [...prev];
-                const lastBar = newData[newData.length -1];
-                if(lastBar && lastBar.time === klineData!.time) {
-                    newData[newData.length -1] = klineData!;
+                const lastBar = newData[newData.length - 1];
+                if (lastBar && lastBar.time === klineData!.time) {
+                  newData[newData.length - 1] = klineData!;
                 } else {
-                    newData.push(klineData!);
+                  newData.push(klineData!);
                 }
                 return newData;
-             });
+              });
             }
           } catch (e) { console.error('Error processing WebSocket kline message:', e); }
         };
@@ -430,19 +474,31 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
           : calculateMA(historicalData, maConfig.period);
 
         if (chartRef.current) {
-            const maLineOptions: DeepPartial<LineSeriesOptions> = {
-                color: maConfig.color,
-                lineWidth: 1,
-                lastValueVisible: false,
-                priceLineVisible: false,
-            };
-            const maSeries = chartRef.current.addLineSeries(maLineOptions);
-            maSeries.setData(maData);
-            maSeriesRefs.current[maConfig.id] = maSeries;
+          const maLineOptions: DeepPartial<LineSeriesOptions> = {
+            color: maConfig.color,
+            lineWidth: 1,
+            lastValueVisible: false,
+            priceLineVisible: false,
+          };
+          const maSeries = chartRef.current.addLineSeries(maLineOptions);
+          maSeries.setData(maData);
+          maSeriesRefs.current[maConfig.id] = maSeries;
         }
       }
     });
   }, [movingAverages, historicalData]);
+
+  // Effect to expose historical data to parent component
+  useEffect(() => {
+    if (onHistoricalDataUpdate && historicalData.length > 0) {
+      console.log('📊 RealTimeTradingChart: Enviando datos históricos al padre:', {
+        count: historicalData.length,
+        sample: historicalData.slice(-2),
+        hasCallback: !!onHistoricalDataUpdate
+      });
+      onHistoricalDataUpdate(historicalData);
+    }
+  }, [historicalData, onHistoricalDataUpdate]);
 
   // Effect for drawing analysis results
   useEffect(() => {
@@ -451,7 +507,7 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
     analysisPriceLinesRef.current.forEach(line => candlestickSeriesRef.current?.removePriceLine(line));
     analysisPriceLinesRef.current = [];
     if (candlestickSeriesRef.current) {
-        candlestickSeriesRef.current.setMarkers([]);
+      candlestickSeriesRef.current.setMarkers([]);
     }
 
     if (analysisResult && showAiAnalysisDrawings && candlestickSeriesRef.current) {
@@ -476,41 +532,41 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
         }
 
         if (showWSignals && (point.tipo === AnalysisPointType.AI_W_SIGNAL_BULLISH || point.tipo === AnalysisPointType.AI_W_SIGNAL_BEARISH)) {
-            if (point.marker_time && point.marker_position && point.marker_shape) {
-                const r = parseInt(wSignalColor.slice(1, 3), 16);
-                const g = parseInt(wSignalColor.slice(3, 5), 16);
-                const b = parseInt(wSignalColor.slice(5, 7), 16);
-                const markerColorWithOpacity = `rgba(${r}, ${g}, ${b}, ${wSignalOpacity})`;
+          if (point.marker_time && point.marker_position && point.marker_shape) {
+            const r = parseInt(wSignalColor.slice(1, 3), 16);
+            const g = parseInt(wSignalColor.slice(3, 5), 16);
+            const b = parseInt(wSignalColor.slice(5, 7), 16);
+            const markerColorWithOpacity = `rgba(${r}, ${g}, ${b}, ${wSignalOpacity})`;
 
-                markers.push({
-                    time: point.marker_time as UTCTimestamp,
-                    position: point.marker_position as SeriesMarkerPosition,
-                    color: markerColorWithOpacity,
-                    shape: point.marker_shape as SeriesMarkerShape,
-                    text: point.marker_text || 'W',
-                });
-            }
+            markers.push({
+              time: point.marker_time as UTCTimestamp,
+              position: point.marker_position as SeriesMarkerPosition,
+              color: markerColorWithOpacity,
+              shape: point.marker_shape as SeriesMarkerShape,
+              text: point.marker_text || 'W',
+            });
+          }
         }
         else if (point.marker_time && point.marker_position && point.marker_shape) {
-            let markerColor = '#FFA500';
-            let generalMarkerOpacity = 0.7;
+          let markerColor = '#FFA500';
+          let generalMarkerOpacity = 0.7;
 
-            if (point.tipo === AnalysisPointType.ENTRADA_LARGO) {
-                markerColor = `rgba(34, 197, 94, ${generalMarkerOpacity})`;
-            } else if (point.tipo === AnalysisPointType.ENTRADA_CORTO) {
-                markerColor = `rgba(239, 68, 68, ${generalMarkerOpacity})`;
-            } else if (point.marker_shape === "arrowUp") {
-                markerColor = `rgba(76, 175, 80, ${generalMarkerOpacity})`;
-            } else if (point.marker_shape === "arrowDown") {
-                 markerColor = `rgba(244, 67, 54, ${generalMarkerOpacity})`;
-            }
-            markers.push({
-                time: point.marker_time as UTCTimestamp,
-                position: point.marker_position as SeriesMarkerPosition,
-                color: markerColor,
-                shape: point.marker_shape as SeriesMarkerShape,
-                text: point.marker_text || '',
-            });
+          if (point.tipo === AnalysisPointType.ENTRADA_LARGO) {
+            markerColor = `rgba(34, 197, 94, ${generalMarkerOpacity})`;
+          } else if (point.tipo === AnalysisPointType.ENTRADA_CORTO) {
+            markerColor = `rgba(239, 68, 68, ${generalMarkerOpacity})`;
+          } else if (point.marker_shape === "arrowUp") {
+            markerColor = `rgba(76, 175, 80, ${generalMarkerOpacity})`;
+          } else if (point.marker_shape === "arrowDown") {
+            markerColor = `rgba(244, 67, 54, ${generalMarkerOpacity})`;
+          }
+          markers.push({
+            time: point.marker_time as UTCTimestamp,
+            position: point.marker_position as SeriesMarkerPosition,
+            color: markerColor,
+            shape: point.marker_shape as SeriesMarkerShape,
+            text: point.marker_text || '',
+          });
         }
       });
       currentSeries.setMarkers(markers);
@@ -542,25 +598,25 @@ const RealTimeTradingChart: React.FC<RealTimeTradingChartProps> = ({
   // Effect for managing pane heights
   useEffect(() => {
     if (chartRef.current && volumeSeriesRef.current && volumePriceScaleIdRef.current) {
-        const chart = chartRef.current;
-        if(volumePriceScaleIdRef.current) {
-            chart.priceScale(volumePriceScaleIdRef.current).applyOptions({
-                visible: volumePaneHeight > 0
-            });
-        }
+      const chart = chartRef.current;
+      if (volumePriceScaleIdRef.current) {
+        chart.priceScale(volumePriceScaleIdRef.current).applyOptions({
+          visible: volumePaneHeight > 0
+        });
+      }
     }
   }, [volumePaneHeight, chartRef, volumeSeriesRef, volumePriceScaleIdRef, chartContainerRef]);
 
 
   interface WebSocketCloseEvent extends Event {
-      readonly code: number;
-      readonly reason: string;
-      readonly wasClean: boolean;
+    readonly code: number;
+    readonly reason: string;
+    readonly wasClean: boolean;
   }
 
 
   return (
-    <div ref={chartContainerRef} className="w-full h-full relative">
+    <div ref={chartContainerRef} className="w-full h-full min-h-[400px] relative">
       {connectionStatus === 'error' && <div className="absolute top-2 left-2 bg-red-500 text-white p-2 rounded text-xs z-10">Connection Error</div>}
     </div>
   );

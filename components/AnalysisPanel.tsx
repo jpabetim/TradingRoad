@@ -3,7 +3,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { GeminiAnalysisResult, TradeSetup, ScenarioAnalysis, AnalysisPointType, FibonacciAnalysis, FibonacciLevel } from '../types';
-import { AnalysisPanelMode, ChatMessage } from '../App'; 
+import { AnalysisPanelMode, ChatMessage } from '../App';
 
 interface AnalysisPanelProps {
   panelMode: AnalysisPanelMode;
@@ -16,7 +16,6 @@ interface AnalysisPanelProps {
   onSendMessage: (message: string) => void;
   onClearChatHistory: () => void; // Nueva prop
   theme: 'dark' | 'light';
-  isMobile: boolean;
   apiKeyPresent: boolean;
 }
 
@@ -25,7 +24,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 );
 
 const DetailItem: React.FC<{ label: string; value?: string | number | null; isCode?: boolean; valueClassName?: string }> = ({ label, value, isCode = false, valueClassName = "" }) => (
-  value || value === 0 ? ( 
+  value || value === 0 ? (
     <p className="text-xs sm:text-sm text-slate-300">
       <span className="font-medium text-slate-100">{label}:</span>{' '}
       {isCode ? <code className="text-xs bg-slate-600 p-0.5 sm:p-1 rounded">{value}</code> : <span className={valueClassName}>{value}</span>}
@@ -34,25 +33,25 @@ const DetailItem: React.FC<{ label: string; value?: string | number | null; isCo
 );
 
 
-const TradeSetupDisplay: React.FC<{ setup: TradeSetup | undefined, isMobile: boolean }> = ({ setup, isMobile }) => {
+const TradeSetupDisplay: React.FC<{ setup: TradeSetup | undefined }> = ({ setup }) => {
   if (!setup || setup.tipo === "ninguno") {
     return <p className="text-xs sm:text-sm text-slate-400 italic">No se identificó una configuración de trade específica.</p>;
   }
   return (
     <div className="space-y-1 mt-1 p-2 sm:p-3 bg-slate-700/50 rounded-md">
       <DetailItem label="Tipo" value={setup.tipo?.toUpperCase()} />
-      {!isMobile && <DetailItem label="Condición de Entrada" value={setup.descripcion_entrada} />}
+      <DetailItem label="Condición de Entrada" value={setup.descripcion_entrada} />
       <DetailItem label="Precio de Entrada Ideal" value={setup.punto_entrada_ideal ? `$${setup.punto_entrada_ideal.toFixed(Math.abs(setup.punto_entrada_ideal) < 1 ? 4 : 2)}` : undefined} />
-      {!isMobile && <DetailItem label="Zona de Entrada" value={setup.zona_entrada ? `[$${setup.zona_entrada[0].toFixed(Math.abs(setup.zona_entrada[0]) < 1 ? 4 : 2)} - $${setup.zona_entrada[1].toFixed(Math.abs(setup.zona_entrada[1]) < 1 ? 4 : 2)}]` : undefined} />}
+      <DetailItem label="Zona de Entrada" value={setup.zona_entrada ? `[$${setup.zona_entrada[0].toFixed(Math.abs(setup.zona_entrada[0]) < 1 ? 4 : 2)} - $${setup.zona_entrada[1].toFixed(Math.abs(setup.zona_entrada[1]) < 1 ? 4 : 2)}]` : undefined} />
       <DetailItem label="Stop Loss" value={setup.stop_loss ? `$${setup.stop_loss.toFixed(Math.abs(setup.stop_loss) < 1 ? 4 : 2)}` : undefined} />
       <DetailItem label="Take Profit 1" value={setup.take_profit_1 ? `$${setup.take_profit_1.toFixed(Math.abs(setup.take_profit_1) < 1 ? 4 : 2)}` : undefined} />
-      {!isMobile && setup.take_profit_2 && <DetailItem label="Take Profit 2" value={`$${setup.take_profit_2.toFixed(Math.abs(setup.take_profit_2) < 1 ? 4 : 2)}`} />}
-      {!isMobile && setup.take_profit_3 && <DetailItem label="Take Profit 3" value={`$${setup.take_profit_3.toFixed(Math.abs(setup.take_profit_3) < 1 ? 4 : 2)}`} />}
+      {setup.take_profit_2 && <DetailItem label="Take Profit 2" value={`$${setup.take_profit_2.toFixed(Math.abs(setup.take_profit_2) < 1 ? 4 : 2)}`} />}
+      {setup.take_profit_3 && <DetailItem label="Take Profit 3" value={`$${setup.take_profit_3.toFixed(Math.abs(setup.take_profit_3) < 1 ? 4 : 2)}`} />}
       {setup.razon_fundamental && <p className="text-xs sm:text-sm text-slate-300 mt-1"><span className="font-medium text-slate-100">Razón:</span> {setup.razon_fundamental}</p>}
-      {!isMobile && setup.confirmaciones_adicionales && setup.confirmaciones_adicionales.length > 0 && (
+      {setup.confirmaciones_adicionales && setup.confirmaciones_adicionales.length > 0 && (
         <DetailItem label="Confirmaciones" value={setup.confirmaciones_adicionales.join(', ')} />
       )}
-      {!isMobile && <DetailItem label="Riesgo/Beneficio" value={setup.ratio_riesgo_beneficio} />}
+      <DetailItem label="Riesgo/Beneficio" value={setup.ratio_riesgo_beneficio} />
       <DetailItem label="Confianza" value={setup.calificacion_confianza} />
     </div>
   );
@@ -85,7 +84,7 @@ const FibonacciAnalysisDisplay: React.FC<{ fiboAnalysis: FibonacciAnalysis | und
         <DetailItem label="Inicio Impulso (A)" value={fiboAnalysis.precio_inicio_impulso ? `$${fiboAnalysis.precio_inicio_impulso.toFixed(Math.abs(fiboAnalysis.precio_inicio_impulso) < 1 ? 4 : 2)}` : 'N/A'} />
         <DetailItem label="Fin Impulso (B)" value={fiboAnalysis.precio_fin_impulso ? `$${fiboAnalysis.precio_fin_impulso.toFixed(Math.abs(fiboAnalysis.precio_fin_impulso) < 1 ? 4 : 2)}` : 'N/A'} />
         {fiboAnalysis.precio_fin_retroceso != null && (
-             <DetailItem label="Fin Retroceso (C)" value={`$${fiboAnalysis.precio_fin_retroceso.toFixed(Math.abs(fiboAnalysis.precio_fin_retroceso) < 1 ? 4 : 2)}`} />
+          <DetailItem label="Fin Retroceso (C)" value={`$${fiboAnalysis.precio_fin_retroceso.toFixed(Math.abs(fiboAnalysis.precio_fin_retroceso) < 1 ? 4 : 2)}`} />
         )}
       </div>
 
@@ -125,7 +124,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
   onSendMessage,
   onClearChatHistory,
   theme,
-  isMobile,
   apiKeyPresent,
 }) => {
   const [chatInputValue, setChatInputValue] = useState('');
@@ -150,7 +148,7 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
       setChatInputValue('');
     }
   };
-  
+
   const StatusDisplayWrapper: React.FC<{ title: string; children: React.ReactNode; titleColor?: string }> = ({ title, children, titleColor = "text-sky-400" }) => (
     <div className="p-3 sm:p-4 bg-slate-800 rounded-lg shadow h-full">
       <h2 className={`text-lg sm:text-xl font-semibold mb-2 ${titleColor}`}>{title}</h2>
@@ -179,9 +177,9 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
     const activeSignalColorClass = activeSignalColorMap[activeSignalType?.toLowerCase() || ''] || 'text-slate-300';
 
     return (
-      <div className="p-3 sm:p-4"> 
+      <div className="p-3 sm:p-4">
         <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-sky-400">Resultados del Análisis IA</h2>
-         {!isMobile && primaryScenario && (
+        {primaryScenario && (
           <>
             <SectionTitle>Escenario Principal</SectionTitle>
             <div className="p-2 sm:p-3 bg-slate-700 rounded-md">
@@ -191,39 +189,22 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
                 <p className="text-xs text-slate-400 mt-1">Invalidación: {primaryScenario.niveles_clave_de_invalidacion}</p>
               )}
               {primaryScenario.trade_setup_asociado && primaryScenario.trade_setup_asociado.tipo !== "ninguno" && (
-                   <>
-                      <p className="text-xs font-semibold text-slate-100 mt-1.5 sm:mt-2">
-                        Configuración Asociada: <span className={primaryScenario.trade_setup_asociado.tipo === 'largo' ? 'text-green-400' : 'text-red-400'}>{primaryScenario.trade_setup_asociado.tipo.toUpperCase()}</span>
-                      </p>
-                      <TradeSetupDisplay setup={primaryScenario.trade_setup_asociado} isMobile={isMobile} />
-                   </>
+                <>
+                  <p className="text-xs font-semibold text-slate-100 mt-1.5 sm:mt-2">
+                    Configuración Asociada: <span className={primaryScenario.trade_setup_asociado.tipo === 'largo' ? 'text-green-400' : 'text-red-400'}>{primaryScenario.trade_setup_asociado.tipo.toUpperCase()}</span>
+                  </p>
+                  <TradeSetupDisplay setup={primaryScenario.trade_setup_asociado} />
+                </>
               )}
             </div>
           </>
         )}
-        {!isMobile && !primaryScenario && (
-             <p className="text-xs sm:text-sm text-slate-400 italic">No se identificó un escenario principal.</p>
+        {!primaryScenario && (
+          <p className="text-xs sm:text-sm text-slate-400 italic">No se identificó un escenario principal.</p>
         )}
-        {(alternativeScenarios.length > 0 || (isMobile && primaryScenario)) && (
+        {alternativeScenarios.length > 0 && (
           <>
             <SectionTitle>Escenarios Alternativos</SectionTitle>
-            {isMobile && primaryScenario && !alternativeScenarios.find(s => s.nombre_escenario === primaryScenario.nombre_escenario) && (
-                 <div className="mt-1.5 sm:mt-2 p-2 sm:p-3 bg-slate-700/70 rounded-md">
-                    <p className="text-xs sm:text-sm font-semibold text-slate-200">{primaryScenario.nombre_escenario} <span className="text-xs text-slate-400">(Prob: {primaryScenario.probabilidad})</span></p>
-                    <p className="text-xs text-slate-300 mt-1">{primaryScenario.descripcion_detallada}</p>
-                    {primaryScenario.niveles_clave_de_invalidacion && (
-                      <p className="text-xs text-slate-400 mt-1">Invalidación: {primaryScenario.niveles_clave_de_invalidacion}</p>
-                    )}
-                    {primaryScenario.trade_setup_asociado && primaryScenario.trade_setup_asociado.tipo !== "ninguno" && (
-                      <>
-                        <p className="text-xs font-semibold text-slate-100 mt-1.5 sm:mt-2">
-                          Trade Potencial: <span className={primaryScenario.trade_setup_asociado.tipo === 'largo' ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{primaryScenario.trade_setup_asociado.tipo.toUpperCase()}</span>
-                        </p>
-                        <TradeSetupDisplay setup={primaryScenario.trade_setup_asociado} isMobile={isMobile}/>
-                      </>
-                    )}
-                </div>
-            )}
             {alternativeScenarios.map((scenario, index) => (
               <div key={index} className="mt-1.5 sm:mt-2 p-2 sm:p-3 bg-slate-700/70 rounded-md">
                 <p className="text-xs sm:text-sm font-semibold text-slate-200">{scenario.nombre_escenario} <span className="text-xs text-slate-400">(Prob: {scenario.probabilidad})</span></p>
@@ -236,64 +217,63 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
                     <p className="text-xs font-semibold text-slate-100 mt-1.5 sm:mt-2">
                       Trade Potencial: <span className={scenario.trade_setup_asociado.tipo === 'largo' ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{scenario.trade_setup_asociado.tipo.toUpperCase()}</span>
                     </p>
-                    <TradeSetupDisplay setup={scenario.trade_setup_asociado} isMobile={isMobile} />
+                    <TradeSetupDisplay setup={scenario.trade_setup_asociado} />
                   </>
                 )}
               </div>
             ))}
           </>
         )}
-        {!isMobile && (
-          <>
-            <SectionTitle>Señal Activa Sugerida</SectionTitle>
-            <p className={`text-xs sm:text-sm font-semibold ${activeSignalColorClass}`}>
-              {activeSignalType && activeSignalType !== "ninguno" ? activeSignalType.toUpperCase() : "NINGUNA"}
-            </p>
-            <SectionTitle>Configuración de Trade Recomendada</SectionTitle>
-            <TradeSetupDisplay setup={analysisResult.conclusion_recomendacion?.mejor_oportunidad_actual} isMobile={isMobile} />
-            <SectionTitle>Análisis Fibonacci</SectionTitle>
-            <FibonacciAnalysisDisplay fiboAnalysis={analysisResult.analisis_fibonacci} />
-          </>)}
+        <>
+          <SectionTitle>Señal Activa Sugerida</SectionTitle>
+          <p className={`text-xs sm:text-sm font-semibold ${activeSignalColorClass}`}>
+            {activeSignalType && activeSignalType !== "ninguno" ? activeSignalType.toUpperCase() : "NINGUNA"}
+          </p>
+          <SectionTitle>Configuración de Trade Recomendada</SectionTitle>
+          <TradeSetupDisplay setup={analysisResult.conclusion_recomendacion?.mejor_oportunidad_actual} />
+          <SectionTitle>Análisis Fibonacci</SectionTitle>
+          <FibonacciAnalysisDisplay fiboAnalysis={analysisResult.analisis_fibonacci} />
+        </>
         {analysisResult.puntos_clave_grafico && analysisResult.puntos_clave_grafico.length > 0 && (
           <> <SectionTitle>Niveles y Zonas Clave Identificados</SectionTitle>
             <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-300 mt-1.5 sm:mt-2 p-1.5 sm:p-2 bg-slate-700 rounded-md">
               {analysisResult.puntos_clave_grafico.map((point, index) => (
                 <li key={index}>
                   <span className="font-medium text-slate-100">{point.label}</span>
-                  {!isMobile && point.tipo && <span className="text-xs text-slate-400"> ({point.tipo.replace(/_/g, ' ')})</span>}
+                  {point.tipo && <span className="text-xs text-slate-400"> ({point.tipo.replace(/_/g, ' ')})</span>}
                   {point.zona && <span className="text-xs text-slate-400"> [$${point.zona[0].toFixed(Math.abs(point.zona[0]) < 1 ? 4 : 2)} - $${point.zona[1].toFixed(Math.abs(point.zona[1]) < 1 ? 4 : 2)}]</span>}
                   {point.nivel != null && <span className="text-xs text-slate-400"> @ ${typeof point.nivel === 'number' ? point.nivel.toFixed(Math.abs(point.nivel) < 1 ? 4 : 2) : point.nivel}</span>}
-                  {!isMobile && point.temporalidad && <span className="text-xs text-slate-500"> ({point.temporalidad})</span>}
+                  {point.temporalidad && <span className="text-xs text-slate-500"> ({point.temporalidad})</span>}
                   {(point.tipo === AnalysisPointType.POI_DEMANDA || point.tipo === AnalysisPointType.POI_OFERTA) && point.mitigado && <span className="text-xs text-sky-300"> (Mitigado)</span>}
-                  {!isMobile && point.importancia && <span className="text-xs text-yellow-400"> Importancia: {point.importancia}</span>}
+                  {point.importancia && <span className="text-xs text-yellow-400"> Importancia: {point.importancia}</span>}
                 </li>))} </ul> </>)}
         <SectionTitle>Estructura General de Mercado y Volumen</SectionTitle>
         {analysisResult.analisis_general?.estructura_mercado_resumen && Object.entries(analysisResult.analisis_general.estructura_mercado_resumen).map(([tf, desc]) =>
           desc && <DetailItem key={tf} label={`Estructura (${tf.replace('htf_', '').replace('mtf_', '').replace('ltf_', '')})`} value={desc as string} />)}
-        {!isMobile && <DetailItem label="Fase Wyckoff" value={analysisResult.analisis_general?.fase_wyckoff_actual} />}
-        <DetailItem label="Sesgo General" value={analysisResult.analisis_general?.sesgo_direccional_general?.toUpperCase()} valueClassName={biasColorClass + " font-semibold"}/>
-        {!isMobile && analysisResult.analisis_general?.comentario_volumen && (
+        <DetailItem label="Fase Wyckoff" value={analysisResult.analisis_general?.fase_wyckoff_actual} />
+        <DetailItem label="Sesgo General" value={analysisResult.analisis_general?.sesgo_direccional_general?.toUpperCase()} valueClassName={biasColorClass + " font-semibold"} />
+        {analysisResult.analisis_general?.comentario_volumen && (
           <p className="text-xs sm:text-sm text-slate-300 mt-1"><span className="font-medium text-slate-100">Comentario Breve de Volumen:</span> {analysisResult.analisis_general.comentario_volumen}</p>)}
-        {!isMobile && analysisResult.analisis_general?.interpretacion_volumen_detallada && (
+        {analysisResult.analisis_general?.interpretacion_volumen_detallada && (
           <p className="text-xs sm:text-sm text-slate-300 mt-1"><span className="font-medium text-slate-100">Análisis Detallado de Volumen:</span> {analysisResult.analisis_general.interpretacion_volumen_detallada}</p>)}
-         {!isMobile && analysisResult.analisis_general?.comentario_funding_rate_oi && (
-           <> <SectionTitle>Análisis Conceptual FR/OI</SectionTitle>
+        {analysisResult.analisis_general?.comentario_funding_rate_oi && (
+          <> <SectionTitle>Análisis Conceptual FR/OI</SectionTitle>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 mb-1.5 sm:mb-2 p-2 sm:p-3 bg-slate-700 rounded-md">
               {analysisResult.analisis_general.comentario_funding_rate_oi} </p> </>)}
         <SectionTitle>Conclusión y Recomendaciones</SectionTitle>
         {analysisResult.conclusion_recomendacion?.resumen_ejecutivo && (
           <p className="text-xs sm:text-sm text-slate-300 mt-1 mb-1.5 sm:mb-2 p-2 sm:p-3 bg-slate-700 rounded-md">{analysisResult.conclusion_recomendacion.resumen_ejecutivo}</p>)}
-        {!isMobile && <DetailItem label="Próximo Movimiento Esperado" value={analysisResult.conclusion_recomendacion?.proximo_movimiento_esperado} />}
-        {!isMobile && analysisResult.conclusion_recomendacion?.oportunidades_reentrada_detectadas && (
-           <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Oportunidades de Reentrada:</h4>
+        <DetailItem label="Próximo Movimiento Esperado" value={analysisResult.conclusion_recomendacion?.proximo_movimiento_esperado} />
+        {analysisResult.conclusion_recomendacion?.oportunidades_reentrada_detectadas && (
+          <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Oportunidades de Reentrada:</h4>
             <p className="text-xs sm:text-sm text-slate-300 p-2 bg-slate-700/70 rounded-md">{analysisResult.conclusion_recomendacion.oportunidades_reentrada_detectadas}</p> </>)}
-        {!isMobile && analysisResult.conclusion_recomendacion?.consideraciones_salida_trade && (
-           <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Consideraciones de Salida:</h4>
+        {analysisResult.conclusion_recomendacion?.consideraciones_salida_trade && (
+          <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Consideraciones de Salida:</h4>
             <p className="text-xs sm:text-sm text-slate-300 p-2 bg-slate-700/70 rounded-md">{analysisResult.conclusion_recomendacion.consideraciones_salida_trade}</p> </>)}
-        {!isMobile && analysisResult.conclusion_recomendacion?.senales_confluencia_avanzada && (
-           <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Señales Avanzadas de Confluencia (Conceptual):</h4>
+        {analysisResult.conclusion_recomendacion?.senales_confluencia_avanzada && (
+          <> <h4 className="text-sm font-semibold mt-2 mb-1 text-sky-300">Señales Avanzadas de Confluencia (Conceptual):</h4>
             <p className="text-xs sm:text-sm text-slate-300 p-2 bg-slate-700/70 rounded-md">{analysisResult.conclusion_recomendacion.senales_confluencia_avanzada}</p> </>)}
-        {!isMobile && <DetailItem label="Advertencias/Riesgos" value={analysisResult.conclusion_recomendacion?.advertencias_riesgos} />}
+        <DetailItem label="Advertencias/Riesgos" value={analysisResult.conclusion_recomendacion?.advertencias_riesgos} />
       </div>
     );
   };
@@ -315,9 +295,8 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
           {apiKeyPresent && chatMessages.length > 0 && (
             <button
               onClick={onClearChatHistory}
-              className={`p-1 rounded-md transition-colors ${
-                theme === 'dark' ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`p-1 rounded-md transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                }`}
               title="Borrar historial del chat"
               aria-label="Borrar historial del chat"
             >
@@ -329,8 +308,8 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
         </div>
         <div className="flex-grow p-3 sm:p-4 space-y-3 overflow-y-auto">
           {!apiKeyPresent && (
-             <div className="p-3 text-sm text-yellow-300 bg-yellow-800 bg-opacity-50 rounded-lg border border-yellow-600">
-                Clave API no configurada. Las funciones de Chat IA están deshabilitadas.
+            <div className="p-3 text-sm text-yellow-300 bg-yellow-800 bg-opacity-50 rounded-lg border border-yellow-600">
+              Clave API no configurada. Las funciones de Chat IA están deshabilitadas.
             </div>
           )}
           {apiKeyPresent && chatError && (
@@ -344,22 +323,21 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
               className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] p-2 sm:p-3 rounded-lg text-xs sm:text-sm shadow ${
-                  msg.sender === 'user'
+                className={`max-w-[80%] p-2 sm:p-3 rounded-lg text-xs sm:text-sm shadow ${msg.sender === 'user'
                     ? `${userMessageBg} text-white`
                     : `${aiMessageBg} ${aiMessageText}`
-                }`}
-                dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>').replace(/```json\s*\n?(.*?)\n?\s*```/gs, (match, p1) => `<pre class="bg-slate-900 text-slate-100 p-2 rounded overflow-x-auto text-xs">${p1.replace(/</g, '&lt;').replace(/>/g, '&gt;').trim()}</pre>`).replace(/`([^`]+)`/g, '<code class="bg-opacity-50 bg-black text-white px-1 py-0.5 rounded text-xs">$1</code>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') }}
+                  }`}
+                dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>').replace(/```json\s*\n?(.*?)\n?\s*```/gs, (_, p1) => `<pre class="bg-slate-900 text-slate-100 p-2 rounded overflow-x-auto text-xs">${p1.replace(/</g, '&lt;').replace(/>/g, '&gt;').trim()}</pre>`).replace(/`([^`]+)`/g, '<code class="bg-opacity-50 bg-black text-white px-1 py-0.5 rounded text-xs">$1</code>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') }}
               />
             </div>
           ))}
           <div ref={chatMessagesEndRef} />
         </div>
-        
+
         {chatLoading && (
-            <div className={`px-3 sm:px-4 pb-1 text-xs text-center ${theme === 'dark' ? 'text-sky-300' : 'text-sky-600'}`}>
-                TradeGuru IA está pensando...
-            </div>
+          <div className={`px-3 sm:px-4 pb-1 text-xs text-center ${theme === 'dark' ? 'text-sky-300' : 'text-sky-600'}`}>
+            TradeGuru IA está pensando...
+          </div>
         )}
 
         <div className={`p-3 sm:p-4 border-t ${inputBorderColor} flex-shrink-0`}>
@@ -393,12 +371,12 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
       </div>
     );
   };
-  
+
   if (panelMode === 'initial') {
-     return (
-        <StatusDisplayWrapper title="Panel de IA">
-          Selecciona "Análisis IA" para un análisis técnico o "Asistente IA" para chatear.
-        </StatusDisplayWrapper>
+    return (
+      <StatusDisplayWrapper title="Panel de IA">
+        Selecciona "Análisis IA" para un análisis técnico o "Asistente IA" para chatear.
+      </StatusDisplayWrapper>
     );
   }
 

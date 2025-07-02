@@ -1,0 +1,2 @@
+# Ignorar la carpeta interna de Git
+.git/

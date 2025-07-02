@@ -1,19 +1,16 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import ControlsPanel from './components/ControlsPanel';
 import RealTimeTradingChart from './components/RealTimeTradingChart';
 import AnalysisPanel from './components/AnalysisPanel';
 import ApiKeyMessage from './components/ApiKeyMessage';
 import DisplaySettingsDialog from './components/DisplaySettingsDialog';
 import { GeminiAnalysisResult, DataSource, MovingAverageConfig } from './types';
 import { analyzeChartWithGemini, ExtendedGeminiRequestPayload } from './services/geminiService';
-import { DEFAULT_SYMBOL, DEFAULT_TIMEFRAME, DEFAULT_DATA_SOURCE, CHAT_SYSTEM_PROMPT_TEMPLATE, GEMINI_MODEL_NAME, AVAILABLE_DATA_SOURCES, AVAILABLE_TIMEFRAMES, AVAILABLE_SYMBOLS_BINANCE, AVAILABLE_SYMBOLS_BINGX } from './constants';
-import { GoogleGenAI, Chat } from "@google/genai";
+import { DEFAULT_SYMBOL, DEFAULT_TIMEFRAME, DEFAULT_DATA_SOURCE, AVAILABLE_DATA_SOURCES, AVAILABLE_TIMEFRAMES, AVAILABLE_SYMBOLS_BINANCE, AVAILABLE_SYMBOLS_BINGX } from './constants';
 
 // Helper for debouncing
 function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
@@ -93,7 +90,7 @@ const App: React.FC = () => {
   const [timeframe, setTimeframe] = useState<string>(() => getLocalStorageItem('traderoad_timeframe', DEFAULT_TIMEFRAME));
   const [theme, setTheme] = useState<Theme>(() => getLocalStorageItem('traderoad_theme', 'dark'));
   const [movingAverages, setMovingAverages] = useState<MovingAverageConfig[]>(() => getLocalStorageItem('traderoad_movingAverages', initialMAs));
-  
+
   const initialBgColorBasedOnTheme = theme === 'dark' ? INITIAL_DARK_CHART_PANE_BACKGROUND_COLOR : INITIAL_LIGHT_CHART_PANE_BACKGROUND_COLOR;
   const [chartPaneBackgroundColor, setChartPaneBackgroundColor] = useState<string>(() =>
     getLocalStorageItem('traderoad_chartPaneBackgroundColor', initialBgColorBasedOnTheme)
@@ -108,21 +105,26 @@ const App: React.FC = () => {
 
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [apiKeyPresent, setApiKeyPresent] = useState<boolean>(false);
-  const [displaySettingsDialogOpen, setDisplaySettingsDialogOpen] = useState<boolean>(false); 
+  const [displaySettingsDialogOpen, setDisplaySettingsDialogOpen] = useState<boolean>(false);
 
   const [analysisResult, setAnalysisResult] = useState<GeminiAnalysisResult | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  
+
   const [latestChartInfo, setLatestChartInfo] = useState<LatestChartInfo>({ price: null, volume: null });
   const [isChartLoading, setIsChartLoading] = useState<boolean>(true);
+  const [chartOhlcData, setChartOhlcData] = useState<any[]>([]); // Store OHLC data from chart
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const [analysisPanelMode, setAnalysisPanelMode] = useState<AnalysisPanelMode>('initial');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState<boolean>(false);
   const [chatError, setChatError] = useState<string | null>(null);
-  const chatSessionRef = useRef<Chat | null>(null);
+
+  // Add a new state and ref for the dropdown visibility
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const symbolDropdownRef = useRef<HTMLDivElement>(null);
+  const symbolInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -148,83 +150,74 @@ const App: React.FC = () => {
   useEffect(() => {
     setIsMobile(typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent));
     let keyFromEnv: string | undefined = undefined;
+
+    // Debug: mostrar todas las variables de entorno disponibles
+    console.log("🔑 Debug API Keys:", {
+      VITE_GEMINI_API_KEY: import.meta.env.VITE_GEMINI_API_KEY,
+      allEnv: import.meta.env
+    });
+
     if (typeof import.meta.env.VITE_GEMINI_API_KEY === 'string') {
       keyFromEnv = import.meta.env.VITE_GEMINI_API_KEY;
     }
     if (keyFromEnv && keyFromEnv !== "TU_CLAVE_API_DE_GEMINI_AQUI") {
       setApiKey(keyFromEnv);
       setApiKeyPresent(true);
+      console.log("✅ API Key configurada correctamente");
     } else {
       setApiKey(null);
       setApiKeyPresent(false);
-      console.warn("Gemini API Key (API_KEY) is not set or is the placeholder value. AI analysis will be disabled.");
+      console.warn("❌ Gemini API Key no configurada o es valor placeholder. Análisis IA deshabilitado.");
+      console.warn("Valor recibido:", keyFromEnv);
     }
   }, []);
-
-  const getSymbolPlaceholder = () => {
-    if (dataSource === 'bingx') return 'Ej: BTC-USDT';
-    return 'Ej: BTCUSDT';
-  };
 
   const getSymbolSuggestions = () => {
     if (dataSource === 'bingx') return AVAILABLE_SYMBOLS_BINGX;
     return AVAILABLE_SYMBOLS_BINANCE;
   };
 
-  const getChatSystemPrompt = useCallback(() => {
-    return CHAT_SYSTEM_PROMPT_TEMPLATE;
-  }, []);
-
-  const initializeChatSession = useCallback(() => {
-    if (apiKey && !chatLoading) { // Prevent re-initialization if already loading/processing
-      try {
-        const ai = new GoogleGenAI({ apiKey });
-        chatSessionRef.current = ai.chats.create({
-          model: GEMINI_MODEL_NAME,
-          config: { systemInstruction: getChatSystemPrompt() },
-        });
-        setChatError(null); // Clear previous errors on successful init
-      } catch (e: any) {
-        console.error("Failed to initialize chat session:", e);
-        setChatError(`Falló la inicialización del chat IA: ${e.message}.`);
-        chatSessionRef.current = null; // Ensure it's null on failure
-      }
-    }
-  }, [apiKey, getChatSystemPrompt, chatLoading]);
-
-
-  useEffect(() => {
-    if (apiKeyPresent) { // Only attempt to initialize if API key is marked as present
-        initializeChatSession();
-    }
-  }, [apiKeyPresent, initializeChatSession]);
-
+  const getSymbolPlaceholder = () => {
+    if (dataSource === 'bingx') return 'Ej: BTC-USDT';
+    return 'Ej: BTCUSDT';
+  };
 
   const debouncedSetActualSymbol = useCallback(
     debounce((newSymbol: string) => {
       const consistentTypedSymbol = getConsistentSymbolForDataSource(newSymbol.trim(), dataSource);
       setActualSymbol(consistentTypedSymbol);
       if (consistentTypedSymbol !== newSymbol.trim()) {
-         setSymbolInput(consistentTypedSymbol); 
+        setSymbolInput(consistentTypedSymbol);
       }
     }, 750),
-    [dataSource] 
+    [dataSource]
   );
 
   const handleSymbolInputChange = (newInputValue: string) => {
-    setSymbolInput(newInputValue.toUpperCase());
-    debouncedSetActualSymbol(newInputValue.toUpperCase());
+    // Convertir a mayúsculas para consistencia
+    const upperValue = newInputValue.toUpperCase();
+    setSymbolInput(upperValue);
+
+    // Mantener el dropdown visible mientras se está escribiendo
+    setDropdownVisible(true);
+
+    // Si el valor está vacío, no cambiar el símbolo
+    if (!upperValue.trim()) return;
+
+    // No debounce para permitir que el usuario escriba libremente
+    // La actualización del símbolo se hará al hacer clic en un elemento de la lista
+    // o al presionar el botón de confirmar en la sección de símbolos personalizados
   };
-  
+
   useEffect(() => {
     if (symbolInput !== actualSymbol) {
-        setSymbolInput(actualSymbol);
+      setSymbolInput(actualSymbol);
     }
   }, [actualSymbol]);
 
 
   useEffect(() => {
-    setAnalysisResult(null); 
+    setAnalysisResult(null);
     setAnalysisError(null);
     setAnalysisPanelMode('initial'); // Reset to initial to avoid showing stale analysis for new symbol
   }, [actualSymbol, dataSource]);
@@ -239,14 +232,18 @@ const App: React.FC = () => {
     const isCurrentBgThemeDefault =
       chartPaneBackgroundColor === INITIAL_DARK_CHART_PANE_BACKGROUND_COLOR ||
       chartPaneBackgroundColor === INITIAL_LIGHT_CHART_PANE_BACKGROUND_COLOR;
-    
+
     if (isCurrentBgThemeDefault && chartPaneBackgroundColor !== newThemeDefaultBgColor) {
-        setChartPaneBackgroundColor(newThemeDefaultBgColor);
+      setChartPaneBackgroundColor(newThemeDefaultBgColor);
     }
   }, [theme, chartPaneBackgroundColor]);
 
   const handleLatestChartInfoUpdate = useCallback((info: LatestChartInfo) => setLatestChartInfo(info), []);
   const handleChartLoadingStateChange = useCallback((chartLoading: boolean) => setIsChartLoading(chartLoading), []);
+  const handleHistoricalDataUpdate = useCallback((data: any[]) => {
+    console.log('📈 Datos históricos recibidos del gráfico:', { count: data.length, sample: data.slice(-2) });
+    setChartOhlcData(data);
+  }, []);
 
   const handleRequestAnalysis = useCallback(async () => {
     if (!apiKey) {
@@ -290,48 +287,61 @@ const App: React.FC = () => {
       setAnalysisLoading(false);
     }
   }, [apiKey, actualSymbol, timeframe, latestChartInfo, isChartLoading, isMobile, analysisResult, analysisPanelMode]);
-  
+
   const handleShowChat = () => {
     setAnalysisPanelMode('chat');
-    setChatError(null); 
+    setChatError(null);
+    setIsPanelVisible(true); // Asegurar que el panel esté visible
     if (!apiKeyPresent) {
-        setChatError("Clave API no configurada. El Chat IA no está disponible.");
-    } else if (!chatSessionRef.current) {
-        initializeChatSession(); // Attempt to initialize if not already done
+      setChatError("Clave API no configurada. El Chat IA no está disponible.");
     }
   };
 
   const handleSendMessageToChat = async (messageText: string) => {
     if (!messageText.trim() || chatLoading) return;
-    
-    if (!chatSessionRef.current) {
-        setChatError("La sesión de chat no está inicializada. Intenta de nuevo.");
-        initializeChatSession(); // Attempt to re-initialize
-        return;
+
+    if (!apiKeyPresent) {
+      setChatError("API key no configurada. El Chat IA no está disponible.");
+      return;
     }
 
-    let userTextForAI = messageText.trim();
     const displaySymbolForAI = actualSymbol.includes('-') ? actualSymbol.replace('-', '/') : (actualSymbol.endsWith('USDT') ? actualSymbol.replace(/USDT$/, '/USDT') : actualSymbol);
 
-    // Inject context if a relevant analysis result is available
-    if (analysisResult && 
-        analysisResult.analisis_general?.simbolo === displaySymbolForAI &&
-        analysisResult.analisis_general?.temporalidad_principal_analisis === timeframe.toUpperCase()
-    ) {
-        const analysisContext = `--- INICIO DEL CONTEXTO DE ANÁLISIS ---
-El usuario está viendo el siguiente gráfico y ya ha ejecutado un análisis. Basa tu respuesta en esta información.
-Símbolo: ${displaySymbolForAI}
-Temporalidad: ${timeframe.toUpperCase()}
-Precio Actual Aproximado: ${latestChartInfo.price}
+    // Debug: verificar los datos OHLC disponibles
+    console.log('📊 Debug OHLC Data:', {
+      totalCandles: chartOhlcData.length,
+      sampleData: chartOhlcData.slice(-3), // últimas 3 velas para debug
+      isLoading: isChartLoading
+    });
 
-Análisis Detallado en JSON:
-${JSON.stringify(analysisResult, null, 2)}
---- FIN DEL CONTEXTO DE ANÁLISIS ---
+    // Preparar datos OHLC para la IA (últimas 50-100 velas para no saturar)
+    const recentOhlcData = chartOhlcData.slice(-50).map(candle => {
+      try {
+        // Asegurar que el tiempo esté en formato ISO string correcto
+        const timeInMs = typeof candle.time === 'number' ?
+          (candle.time > 1e12 ? candle.time : candle.time * 1000) : // Si ya está en ms, usar tal como está
+          Date.now();
 
-Pregunta del usuario: ${messageText.trim()}`;
-        userTextForAI = analysisContext;
-    }
+        return {
+          time: new Date(timeInMs).toISOString(),
+          open: parseFloat(candle.open) || 0,
+          high: parseFloat(candle.high) || 0,
+          low: parseFloat(candle.low) || 0,
+          close: parseFloat(candle.close) || 0,
+          volume: parseFloat(candle.volume) || 0
+        };
+      } catch (error) {
+        console.error('Error procesando vela:', candle, error);
+        return null;
+      }
+    }).filter(Boolean); // Filtrar valores null
 
+    console.log('🤖 Datos enviados a IA:', {
+      symbol: displaySymbolForAI,
+      candlesCount: recentOhlcData.length,
+      latestPrice: latestChartInfo.price,
+      sampleOhlc: recentOhlcData.slice(-2) // últimas 2 velas procesadas
+    });
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -343,37 +353,60 @@ Pregunta del usuario: ${messageText.trim()}`;
     setChatLoading(true);
     setChatError(null);
 
-    try {
-      const stream = await chatSessionRef.current.sendMessageStream({ message: userTextForAI });
-      let currentAiMessageId = crypto.randomUUID();
-      let accumulatedResponse = "";
-      
-      setChatMessages((prevMessages) => [
-        ...prevMessages,
-        { id: currentAiMessageId, sender: 'ai', text: "▋", timestamp: Date.now() },
-      ]);
+    const currentAiMessageId = crypto.randomUUID();
+    setChatMessages((prevMessages) => [
+      ...prevMessages,
+      { id: currentAiMessageId, sender: 'ai', text: "Escribiendo...", timestamp: Date.now() },
+    ]);
 
-      for await (const chunk of stream) {
-        accumulatedResponse += chunk.text;
-        setChatMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === currentAiMessageId ? { ...msg, text: accumulatedResponse + "▋" } : msg
-          )
-        );
+    try {
+      const response = await fetch('/api/ai/assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: messageText.trim(), // Solo la pregunta del usuario
+          section: 'analysis',
+          context: {
+            symbol: displaySymbolForAI,
+            timeframe: timeframe.toUpperCase(),
+            price: latestChartInfo.price,
+            volume: latestChartInfo.volume,
+            isLoading: isChartLoading,
+            dataSource: dataSource.toUpperCase(),
+            ohlcData: recentOhlcData, // Los datos OHLC van aquí
+            candlesCount: recentOhlcData.length,
+            analysis: analysisResult
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status}`);
       }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       setChatMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === currentAiMessageId ? { ...msg, text: accumulatedResponse } : msg
-          )
-        );
+        prevMessages.map((msg) =>
+          msg.id === currentAiMessageId ? { ...msg, text: data.response } : msg
+        )
+      );
+
     } catch (e: any) {
-      console.error("Error sending message to Gemini Chat:", e);
-      const errorMessage = `Falló la obtención de respuesta de la IA: ${e.message}`;
+      console.error("Error sending message to AI Assistant:", e);
+      const errorMessage = `Error comunicándose con la IA: ${e.message}`;
       setChatError(errorMessage);
-      setChatMessages((prevMessages) => [
-        ...prevMessages,
-        { id: crypto.randomUUID(), sender: 'ai', text: `Error: ${e.message}`, timestamp: Date.now() },
-      ]);
+      setChatMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === currentAiMessageId ? { ...msg, text: `Error: ${e.message}` } : msg
+        )
+      );
     } finally {
       setChatLoading(false);
     }
@@ -382,10 +415,6 @@ Pregunta del usuario: ${messageText.trim()}`;
   const handleClearChatHistory = () => {
     setChatMessages([]);
     setChatError(null);
-    // Re-initialize chat session to clear AI's context as well
-    if (apiKeyPresent) {
-        initializeChatSession();
-    }
   };
 
 
@@ -394,23 +423,100 @@ Pregunta del usuario: ${messageText.trim()}`;
     const symbolToConvert = symbolInput || actualSymbol;
     const consistentNewSymbol = getConsistentSymbolForDataSource(symbolToConvert, newDataSource);
     setActualSymbol(consistentNewSymbol);
-    setSymbolInput(consistentNewSymbol); 
+    setSymbolInput(consistentNewSymbol);
   };
-  
+
   const toggleAllMAsVisibility = (forceVisible?: boolean) => {
-    const newVisibility = typeof forceVisible === 'boolean' 
-        ? forceVisible 
-        : !movingAverages.every(ma => ma.visible);
+    const newVisibility = typeof forceVisible === 'boolean'
+      ? forceVisible
+      : !movingAverages.every(ma => ma.visible);
     setMovingAverages(prevMAs => prevMAs.map(ma => ({ ...ma, visible: newVisibility })));
+  };
+
+  // Add a click outside handler for the dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        symbolDropdownRef.current &&
+        symbolInputRef.current &&
+        !symbolDropdownRef.current.contains(event.target as Node) &&
+        !symbolInputRef.current.contains(event.target as Node)
+      ) {
+        setDropdownVisible(false);
+      }
+    }
+
+    // Close dropdown on Escape key
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setDropdownVisible(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Add keyboard navigation support for the dropdown
+  const handleKeyboardNavigation = (event: React.KeyboardEvent) => {
+    if (!dropdownVisible) return;
+
+    if (event.key === 'Enter') {
+      // If the input matches exactly one of the filtered symbols, select it
+      const filtered = filteredSymbols();
+      if (filtered.length === 1) {
+        handleSelectSymbol(filtered[0]);
+      } else if (symbolInput) {
+        // Otherwise just use the current input
+        debouncedSetActualSymbol(symbolInput);
+        setDropdownVisible(false);
+      }
+    }
+  };
+
+  // Filter symbols based on input - always show all symbols initially
+  const filteredSymbols = () => {
+    const suggestions = getSymbolSuggestions();
+    // Don't filter when dropdown is first opened
+    if (!symbolInput || !symbolInput.trim() || !initialFilterApplied) return suggestions;
+    return suggestions.filter(s => s.toLowerCase().includes(symbolInput.toLowerCase()));
+  };
+
+  // Track if initial filter has been applied
+  const [initialFilterApplied, setInitialFilterApplied] = useState(false);
+
+  // Handle symbol selection from dropdown
+  const handleSelectSymbol = (symbol: string) => {
+    setSymbolInput(symbol);
+    debouncedSetActualSymbol(symbol);
+    setDropdownVisible(false);
   };
 
   return (
     <div className={`flex flex-col h-screen antialiased ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-gray-100 text-gray-900'}`}>
       <header className={`p-2 sm:p-3 shadow-md flex justify-between items-center flex-nowrap gap-4 ${theme === 'dark' ? 'bg-slate-800' : 'bg-white border-b border-gray-200'}`}>
-        {/* Left side: Title and market controls */}
+        {/* Left side: Logo, Title and market controls */}
         <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-          <h1 className={`text-lg sm:text-xl font-bold ${theme === 'dark' ? 'text-sky-400' : 'text-sky-600'} flex-shrink-0`}>TradeRoad</h1>
-          
+          <div
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => {
+              // URL dinámica: usar variable de entorno o fallback para desarrollo
+              const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5007';
+              window.location.href = `${backendUrl}/dashboard`;
+            }}
+          >
+            <img
+              src="/logo-tradingroad.png"
+              alt="TradingRoad Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10"
+            />
+            <h1 className={`text-lg sm:text-xl font-bold ${theme === 'dark' ? 'text-sky-400' : 'text-sky-600'} flex-shrink-0`}>TradingRoad</h1>
+          </div>
+
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Data Source */}
             <div className="w-32 sm:w-36">
@@ -419,39 +525,162 @@ Pregunta del usuario: ${messageText.trim()}`;
                 id="dataSource-header"
                 value={dataSource}
                 onChange={(e) => handleDataSourceChange(e.target.value as DataSource)}
-                className={`w-full text-xs rounded-md p-1.5 border focus:ring-1 focus:outline-none transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-sky-500'
-                    : 'bg-gray-100 border-gray-300 text-gray-800 focus:ring-sky-500'
-                }`}
+                className={`w-full text-xs rounded-md p-1.5 border focus:ring-1 focus:outline-none transition-colors ${theme === 'dark'
+                  ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-sky-500'
+                  : 'bg-gray-100 border-gray-300 text-gray-800 focus:ring-sky-500'
+                  }`}
                 aria-label="Fuente de Datos"
               >
                 {AVAILABLE_DATA_SOURCES.map(ds => <option key={ds.value} value={ds.value}>{ds.label}</option>)}
               </select>
             </div>
 
-            {/* Symbol */}
-            <div className="w-28 sm:w-32">
+            {/* Symbol - Selector rediseñado con dropdown y campo de texto separados */}
+            <div className="w-36 sm:w-40 relative">
               <label htmlFor="symbol-input-header" className="sr-only">Símbolo</label>
-              <input
-                type="text"
-                id="symbol-input-header"
-                value={symbolInput}
-                onChange={(e) => handleSymbolInputChange(e.target.value)}
-                placeholder={getSymbolPlaceholder()}
-                className={`w-full text-xs rounded-md p-1.5 border focus:ring-1 focus:outline-none transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-sky-500'
-                    : 'bg-gray-100 border-gray-300 text-gray-800 focus:ring-sky-500'
-                }`}
-                list="symbol-suggestions-header"
-                aria-label="Par de Trading / Símbolo"
-              />
-              <datalist id="symbol-suggestions-header">
-                {getSymbolSuggestions().map(s => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
+
+              {/* Panel con simbolo actual y botones de acción */}
+              <div className={`flex rounded-md border overflow-hidden ${theme === 'dark'
+                ? 'bg-slate-700 border-slate-600'
+                : 'bg-gray-100 border-gray-300'}`}>
+
+                {/* Visualización del símbolo actual */}
+                <div className={`flex items-center justify-between px-2 py-1.5 flex-grow ${theme === 'dark'
+                  ? 'text-white font-medium'
+                  : 'text-gray-900 font-medium'}`}>
+                  <span className="text-xs truncate">
+                    {symbolInput || getSymbolPlaceholder()}
+                  </span>
+                </div>
+
+                {/* Botón desplegable */}
+                <button
+                  onClick={() => {
+                    setDropdownVisible(!dropdownVisible);
+                    if (!dropdownVisible) {
+                      // When opening the dropdown, always show all symbols
+                      setInitialFilterApplied(false);
+                    }
+                  }}
+                  className={`flex items-center justify-center px-2 border-l ${theme === 'dark'
+                    ? 'bg-slate-800 border-slate-600 text-white hover:bg-slate-900'
+                    : 'bg-gray-200 border-gray-300 text-gray-800 hover:bg-gray-300'
+                    }`}
+                  aria-label="Ver lista de símbolos"
+                  aria-expanded={dropdownVisible}
+                  aria-haspopup="listbox"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 flex-shrink-0">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Dropdown panel con búsqueda y opciones */}
+              {dropdownVisible && (
+                <div
+                  ref={symbolDropdownRef}
+                  className={`absolute z-10 w-64 sm:w-72 left-0 shadow-lg rounded-md mt-1 overflow-hidden focus:outline-none ${theme === 'dark'
+                    ? 'bg-slate-900 border border-slate-700'
+                    : 'bg-white border border-gray-300'
+                    }`}
+                  role="listbox"
+                >
+                  {/* Encabezado del dropdown */}
+                  <div className={`p-2 ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                    <h3 className={`text-xs font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+                      Seleccionar símbolo
+                    </h3>
+                  </div>
+
+                  {/* Campo de búsqueda dentro del dropdown */}
+                  <div className={`p-2 border-b ${theme === 'dark' ? 'border-slate-700' : 'border-gray-200'}`}>
+                    <input
+                      type="text"
+                      ref={symbolInputRef}
+                      value={symbolInput}
+                      onChange={(e) => {
+                        handleSymbolInputChange(e.target.value);
+                        setInitialFilterApplied(true);
+                      }}
+                      onKeyDown={handleKeyboardNavigation}
+                      onClick={(e) => e.stopPropagation()}
+                      placeholder={getSymbolPlaceholder()}
+                      className={`w-full text-xs p-1.5 border rounded-md focus:ring-1 focus:outline-none ${theme === 'dark'
+                        ? 'bg-slate-700 border-slate-600 text-white focus:ring-sky-500 placeholder-slate-400'
+                        : 'bg-white border-gray-300 text-gray-800 focus:ring-sky-500 placeholder-gray-400'
+                        }`}
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* Lista de símbolos */}
+                  <div className={`overflow-y-auto max-h-60 ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+                    {filteredSymbols().length > 0 ? (
+                      filteredSymbols().map(symbol => (
+                        <div
+                          key={symbol}
+                          onClick={() => handleSelectSymbol(symbol)}
+                          className={`cursor-pointer select-none py-2 px-3 transition-colors ${symbol === symbolInput
+                              ? theme === 'dark' ? 'bg-sky-700 text-white font-bold' : 'bg-sky-500 text-white font-bold'
+                              : theme === 'dark' ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-gray-900 hover:bg-gray-100'
+                            }`}
+                          role="option"
+                          aria-selected={symbol === symbolInput}
+                        >
+                          <span className="block truncate text-sm font-medium">
+                            {symbol}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={`py-3 px-3 text-center ${theme === 'dark' ? 'text-slate-300 bg-slate-800' : 'text-gray-700 bg-gray-100'}`}>
+                        No hay coincidencias
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sección para símbolos personalizados */}
+                  <div className={`p-2 border-t ${theme === 'dark' ? 'border-slate-700 bg-slate-700' : 'border-gray-200 bg-gray-100'}`}>
+                    <h3 className={`text-xs font-bold mb-1 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+                      Símbolo personalizado
+                    </h3>
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        value={symbolInput}
+                        onChange={(e) => {
+                          handleSymbolInputChange(e.target.value);
+                          setInitialFilterApplied(true);
+                        }}
+                        onKeyDown={handleKeyboardNavigation}
+                        placeholder="Escribir símbolo..."
+                        className={`flex-grow text-xs p-1.5 border rounded-md focus:ring-1 focus:outline-none ${theme === 'dark'
+                          ? 'bg-slate-800 border-slate-600 text-white focus:ring-sky-500 placeholder-slate-400'
+                          : 'bg-white border-gray-300 text-gray-800 focus:ring-sky-500 placeholder-gray-400'
+                          }`}
+                        autoComplete="off"
+                      />
+                      <button
+                        onClick={() => {
+                          if (symbolInput) {
+                            debouncedSetActualSymbol(symbolInput);
+                            setDropdownVisible(false);
+                          }
+                        }}
+                        className={`px-2 py-1 rounded ${theme === 'dark'
+                          ? 'bg-sky-600 text-white hover:bg-sky-700'
+                          : 'bg-sky-500 text-white hover:bg-sky-600'
+                          }`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Timeframe */}
@@ -461,11 +690,10 @@ Pregunta del usuario: ${messageText.trim()}`;
                 id="timeframe-header"
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
-                className={`w-full text-xs rounded-md p-1.5 border focus:ring-1 focus:outline-none transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-sky-500'
-                    : 'bg-gray-100 border-gray-300 text-gray-800 focus:ring-sky-500'
-                }`}
+                className={`w-full text-xs rounded-md p-1.5 border focus:ring-1 focus:outline-none transition-colors ${theme === 'dark'
+                  ? 'bg-slate-700 border-slate-600 text-slate-100 focus:ring-sky-500'
+                  : 'bg-gray-100 border-gray-300 text-gray-800 focus:ring-sky-500'
+                  }`}
                 aria-label="Temporalidad"
               >
                 {AVAILABLE_TIMEFRAMES.map(tf => (
@@ -475,9 +703,38 @@ Pregunta del usuario: ${messageText.trim()}`;
             </div>
           </div>
         </div>
-        
-        {/* Right side: Action buttons */}
+
+        {/* Right side: AI buttons and control buttons */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* AI Analysis Button */}
+          <button
+            onClick={handleRequestAnalysis}
+            disabled={analysisLoading || chatLoading || !apiKeyPresent || isChartLoading}
+            title="Análisis IA del gráfico"
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
+              : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
+              }`}
+          >
+            {analysisLoading ? 'Analizando...' : 'Análisis IA'}
+          </button>
+
+          {/* AI Assistant Button */}
+          <button
+            onClick={handleShowChat}
+            disabled={analysisLoading || chatLoading || !apiKeyPresent}
+            title="Asistente IA de trading"
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
+              ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
+              : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
+              }`}
+          >
+            {chatLoading ? 'Pensando...' : 'Asistente IA'}
+          </button>
+
+          {/* Separator */}
+          <div className={`w-px h-6 ${theme === 'dark' ? 'bg-slate-600' : 'bg-gray-300'}`}></div>
+
           <button
             onClick={() => setIsPanelVisible(!isPanelVisible)}
             aria-label={isPanelVisible ? 'Ocultar panel de controles' : 'Mostrar panel de controles'}
@@ -485,16 +742,16 @@ Pregunta del usuario: ${messageText.trim()}`;
           >
             {isPanelVisible ? 'Ocultar Panel' : 'Mostrar Panel'}
           </button>
-          
+
           <button
-              onClick={() => setDisplaySettingsDialogOpen(true)}
-              title="Configuración de Visualización"
-              aria-label="Abrir Configuración de Visualización"
-              className={`p-1.5 sm:p-2 rounded text-xs transition-colors ${theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
-              </svg>
+            onClick={() => setDisplaySettingsDialogOpen(true)}
+            title="Configuración de Visualización"
+            aria-label="Abrir Configuración de Visualización"
+            className={`p-1.5 sm:p-2 rounded text-xs transition-colors ${theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+            </svg>
           </button>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
@@ -512,18 +769,34 @@ Pregunta del usuario: ${messageText.trim()}`;
               </svg>
             )}
           </button>
+
+          {/* Chart Tools Toggle */}
+          <button
+            onClick={() => setShowAiAnalysisDrawings(!showAiAnalysisDrawings)}
+            title={showAiAnalysisDrawings ? "Ocultar herramientas de análisis" : "Mostrar herramientas de análisis"}
+            className={`p-1.5 sm:p-2 rounded text-xs transition-colors ${showAiAnalysisDrawings
+              ? (theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white')
+              : (theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700')
+              }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-4 h-4 sm:w-5 sm:h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 0 3 3 0 00-5.78-1.128 2.25 2.25 0 010-4.244 3 3 0 005.78-1.128 2.25 2.25 0 012.4 0 3 3 0 005.78 1.128 2.25 2.25 0 010 4.244A3 3 0 009.53 16.122zm0 0V11m0 0A2.25 2.25 0 007.28 8.75m2.25 2.25A2.25 2.25 0 0112 13.5m0 0V7.28A2.25 2.25 0 0114.22 5m0 0a2.25 2.25 0 013.5 2.25m0 0V11a2.25 2.25 0 01-2.25 2.25m0 0h-3.75M14.22 5h3.75" />
+            </svg>
+          </button>
         </div>
       </header>
 
       <ApiKeyMessage apiKeyPresent={apiKeyPresent} />
 
       <main className="flex-grow flex flex-col md:flex-row p-2 sm:p-4 gap-2 sm:gap-4 overflow-y-auto">
-        <div className={`w-full flex-1 flex flex-col gap-2 sm:gap-4 overflow-hidden order-1 ${isPanelVisible ? 'md:order-2' : 'md:order-1'}`}>
-          <div className={`flex-grow min-h-[300px] sm:min-h-[400px] md:min-h-0 shadow-lg rounded-lg overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+        <div className={`w-full flex-1 flex flex-col gap-2 sm:gap-4 overflow-hidden order-1 ${(isPanelVisible && (analysisPanelMode !== 'initial')) ? 'md:order-2' : 'md:order-1'}`}>
+          <div className={`flex-grow min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-lg rounded-lg overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
             <RealTimeTradingChart
               dataSource={dataSource} symbol={actualSymbol} timeframe={timeframe}
               analysisResult={analysisResult} onLatestChartInfoUpdate={handleLatestChartInfoUpdate}
-              onChartLoadingStateChange={handleChartLoadingStateChange} movingAverages={movingAverages}
+              onChartLoadingStateChange={handleChartLoadingStateChange}
+              onHistoricalDataUpdate={handleHistoricalDataUpdate}
+              movingAverages={movingAverages}
               theme={theme} chartPaneBackgroundColor={chartPaneBackgroundColor}
               volumePaneHeight={volumePaneHeight} showAiAnalysisDrawings={showAiAnalysisDrawings}
               wSignalColor={wSignalColor} wSignalOpacity={wSignalOpacity / 100}
@@ -531,42 +804,31 @@ Pregunta del usuario: ${messageText.trim()}`;
             />
           </div>
         </div>
-        <div
-          id="controls-analysis-panel"
-          className={`w-full md:w-80 lg:w-[360px] xl:w-[400px] flex-none flex flex-col gap-2 sm:gap-4 overflow-y-auto order-2 md:order-1 ${!isPanelVisible ? 'hidden' : ''}`}
-        >
-          <div className={`${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} p-1 rounded-lg shadow-md flex-shrink-0 order-1 md:order-none`}>
-            <ControlsPanel
-              onRequestAnalysis={handleRequestAnalysis} 
-              onRequestChat={handleShowChat}
-              isLoading={analysisLoading || chatLoading}
-              apiKeyPresent={apiKeyPresent}
-              isChartLoading={isChartLoading} 
-              showAiAnalysisDrawings={showAiAnalysisDrawings}
-              setShowAiAnalysisDrawings={setShowAiAnalysisDrawings}
-              analysisPanelMode={analysisPanelMode}
-              hasAnalysisResult={!!analysisResult && analysisResult.analisis_general?.simbolo === (actualSymbol.includes('-') ? actualSymbol.replace('-', '/') : (actualSymbol.endsWith('USDT') ? actualSymbol.replace(/USDT$/, '/USDT') : actualSymbol)) && analysisResult.analisis_general?.temporalidad_principal_analisis === timeframe.toUpperCase()}
-            />
+        {/* AI Panel - Solo visible cuando hay análisis o chat activo */}
+        {(analysisPanelMode !== 'initial') && (
+          <div
+            id="controls-analysis-panel"
+            className={`w-full md:w-80 lg:w-[360px] xl:w-[400px] flex-none flex flex-col gap-2 sm:gap-4 overflow-y-auto order-2 md:order-1 ${!isPanelVisible ? 'hidden' : ''}`}
+          >
+            <div className={`${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md flex-grow flex flex-col order-2 md:order-none`}>
+              <AnalysisPanel
+                panelMode={analysisPanelMode}
+                analysisResult={analysisResult}
+                analysisLoading={analysisLoading}
+                analysisError={analysisError}
+                chatMessages={chatMessages}
+                chatLoading={chatLoading}
+                chatError={chatError}
+                onSendMessage={handleSendMessageToChat}
+                onClearChatHistory={handleClearChatHistory}
+                theme={theme}
+                apiKeyPresent={apiKeyPresent}
+              />
+            </div>
           </div>
-          <div className={`${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md flex-grow flex flex-col order-2 md:order-none`}>
-            <AnalysisPanel 
-              panelMode={analysisPanelMode}
-              analysisResult={analysisResult} 
-              analysisLoading={analysisLoading}
-              analysisError={analysisError} 
-              chatMessages={chatMessages}
-              chatLoading={chatLoading}
-              chatError={chatError}
-              onSendMessage={handleSendMessageToChat}
-              onClearChatHistory={handleClearChatHistory}
-              theme={theme}
-              isMobile={isMobile}
-              apiKeyPresent={apiKeyPresent}
-            />
-          </div>
-        </div>
+        )}
       </main>
-      
+
       {displaySettingsDialogOpen && (
         <DisplaySettingsDialog
           isOpen={displaySettingsDialogOpen}

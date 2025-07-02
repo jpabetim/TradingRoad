@@ -1,21 +1,53 @@
 services:
+  # Backend Flask
   - type: web
-    name: tradingroad-platform
-    env: python
+    name: tradingroad-backend
+    runtime: python
     region: oregon
     plan: free
-    buildCommand: |
-      pip install --upgrade pip && 
-      pip install -r requirements.txt
-    startCommand: python run.py
-    healthCheckPath: /dashboard
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "python run.py"
+    healthCheckPath: "/dashboard"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
       - key: PORT
         generateValue: true
       - key: FLASK_ENV
-        value: production
+        value: "production"
       - key: DEBUG
-        value: false
+        value: "false"
+      - key: FRONTEND_URL
+        value: "https://tradingroad-frontend.onrender.com"
+      # Variables de API - agregar desde el dashboard de Render
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+    autoDeploy: true
+
+  # Frontend React
+  - type: web
+    name: tradingroad-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run preview"
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: "https://tradingroad-backend.onrender.com"
+      # Variables de API para el frontend
+      - key: VITE_GEMINI_API_KEY
+        sync: false
+      - key: VITE_FINNHUB_API_KEY
+        sync: false
+      - key: VITE_FMP_API_KEY
+        sync: false
+    autoDeploy: true
+        sync: false
+      - key: VITE_FMP_API_KEY
+        sync: false
     autoDeploy: true

@@ -45,14 +45,32 @@
 <!-- Resumen del Mercado -->
 <div class="market-summary">
     <h2>Resumen del Mercado</h2>
-    <ul>
-        <li>S&P 500: <span id="sp500">4,500.00</span> <span class="change positive">+0.3%</span></li>
-        <li>NASDAQ: <span id="nasdaq">14,000.00</span> <span class="change positive">+0.5%</span></li>
-        <li>Dow Jones: <span id="dow">34,500.00</span> <span class="change negative">-0.1%</span></li>
-        <li>EUR/USD: <span id="eurusd">1.10</span> <span class="change negative">-0.2%</span></li>
-        <li>BTC/USD: <span id="btcusd">30,000.00</span> <span class="change positive">+1.2%</span></li>
-        <li>Oro: <span id="gold">2,100.00</span> <span class="change positive">+0.4%</span></li>
-    </ul>
+    <div id="market-data-loading">
+        <div class="loading-spinner"></div>
+        <p>Cargando datos del mercado en tiempo real...</p>
+    </div>
+    <div id="market-data" style="display: none;" class="market-grid">
+        <div class="market-card">
+            <h3>BTC/USDT</h3>
+            <div class="price" id="btc-price">-</div>
+            <div id="btc-change" class="change">-</div>
+        </div>
+        <div class="market-card">
+            <h3>ETH/USDT</h3>
+            <div class="price" id="eth-price">-</div>
+            <div id="eth-change" class="change">-</div>
+        </div>
+        <div class="market-card">
+            <h3>SOL/USDT</h3>
+            <div class="price" id="sol-price">-</div>
+            <div id="sol-change" class="change">-</div>
+        </div>
+        <div class="market-card">
+            <h3>SPY (S&P 500)</h3>
+            <div class="price" id="spy-price">-</div>
+            <div id="spy-change" class="change">-</div>
+        </div>
+    </div>
 </div>
 
 <!-- Noticias Principales -->
@@ -81,6 +99,11 @@
             return;
         }
         
+        // Mostrar loading usando el gestor global
+        if (window.loadingManager) {
+            window.loadingManager.showForSection('.news-section', 'Cargando noticias financieras...');
+        }
+        
         fetch('/api/news?category=general&sentiment=all')
             .then(response => {
                 console.log('Response status:', response.status);
@@ -97,6 +120,12 @@
             .catch(error => {
                 console.error('Error:', error);
                 renderError('Error de conexión', container);
+            })
+            .finally(() => {
+                // Ocultar loading
+                if (window.loadingManager) {
+                    window.loadingManager.hideForSection('.news-section');
+                }
             });
     }
     
@@ -149,13 +178,123 @@
         return div.innerHTML;
     }
     
-    // Cargar noticias cuando el DOM esté listo
+    // Cargar noticias y datos del mercado cuando el DOM esté listo
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadRealNews);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRealNews();
+            loadRealMarketData();
+        });
     } else {
         loadRealNews();
+        loadRealMarketData();
     }
 })();
+
+// Función para cargar datos reales del mercado
+function loadRealMarketData() {
+    console.log('Cargando datos reales del mercado...');
+    
+    // Mostrar loading usando el gestor global
+    if (window.loadingManager) {
+        window.loadingManager.showForSection('.market-summary', 'Cargando datos del mercado...');
+    }
+    
+    fetch('/api/market/summary')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Datos del mercado recibidos:', data);
+            
+            if (data.status === 'success' || data.status === 'fallback') {
+                updateMarketDisplay(data.data, data.source);
+            } else {
+                console.error('Error en respuesta del mercado:', data);
+                showMarketError('Error al cargar datos del mercado');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching market data:', error);
+            showMarketError('Error de conexión al cargar el mercado');
+        })
+        .finally(() => {
+            // Ocultar loading
+            if (window.loadingManager) {
+                window.loadingManager.hideForSection('.market-summary');
+            }
+        });
+}
+
+function updateMarketDisplay(marketData, source) {
+    const loadingDiv = document.getElementById('market-data-loading');
+    const marketDiv = document.getElementById('market-data');
+    
+    if (loadingDiv) loadingDiv.style.display = 'none';
+    if (marketDiv) marketDiv.style.display = 'grid';
+    
+    // Actualizar cada símbolo
+    Object.keys(marketData).forEach(symbol => {
+        const data = marketData[symbol];
+        const priceElement = document.getElementById(`${symbol.toLowerCase()}-price`);
+        const changeElement = document.getElementById(`${symbol.toLowerCase()}-change`);
+        
+        if (priceElement && changeElement) {
+            // Formatear precio según el símbolo
+            let formattedPrice;
+            if (symbol.includes('BTC') || symbol.includes('ETH') || symbol.includes('SOL')) {
+                formattedPrice = `$${parseFloat(data.price).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            } else {
+                formattedPrice = `$${parseFloat(data.price).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            }
+            
+            priceElement.textContent = formattedPrice;
+            
+            // Formatear cambio porcentual
+            const change = parseFloat(data.change_24h);
+            const changeText = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+            changeElement.textContent = changeText;
+            
+            // Aplicar clase CSS según el cambio
+            changeElement.className = `change ${change >= 0 ? 'positive' : 'negative'}`;
+        }
+    });
+    
+    // Mostrar indicador de fuente de datos
+    if (source === 'fallback') {
+        console.log('Usando datos de respaldo - APIs no disponibles');
+    } else {
+        console.log('Datos del mercado cargados desde APIs en vivo');
+    }
+}
+
+function showMarketError(message) {
+    const loadingDiv = document.getElementById('market-data-loading');
+    if (loadingDiv) {
+        loadingDiv.innerHTML = `
+            <div style="color: #ff6b6b; text-align: center;">
+                <p>⚠️ ${message}</p>
+                <button onclick="loadRealMarketData()" style="
+                    background: rgba(142, 79, 255, 0.8);
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    margin-top: 10px;
+                ">Reintentar</button>
+            </div>
+        `;
+    }
+}
+
+// Cargar datos del mercado al iniciar
+document.addEventListener('DOMContentLoaded', function() {
+    loadRealMarketData();
+});
 </script>
 
 {% endblock %}

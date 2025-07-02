@@ -46,32 +46,10 @@
         <p>&copy; 2025 TradingRoad - Plataforma de Análisis Financiero</p>
     </footer>
 
-    <!-- Asistente Global de IA (TraderAlpha) -->
-    <div id="traderalpha-fab" class="chat-fab">
-        <span class="fab-text">IA</span>
-    </div>
-
-    <div id="traderalpha-modal" class="chat-modal hidden">
-        <div class="chat-modal-content">
-            <div class="chat-header">
-                <h3>TraderAlpha</h3>
-                <button id="traderalpha-close" class="chat-close">&times;</button>
-            </div>
-            <div id="traderalpha-messages" class="chat-messages">
-                <!-- Los mensajes se añaden dinámicamente -->
-            </div>
-            <div class="chat-input-area">
-                <form id="traderalpha-form">
-                    <textarea id="traderalpha-input" placeholder="Pregunta sobre trading, volatilidad, opciones..." rows="1"></textarea>
-                    <button type="submit">Enviar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
     <!-- JavaScript base -->
+    <script src="/static/js/loading-manager.js"></script>
     <script src="/static/js/main.js"></script>
+    <script src="/static/js/ai-assistant.js"></script>
     {% block scripts %}{% endblock %}
-    <script src="/static/js/global-assistant.js"></script>
 </body>
 </html>

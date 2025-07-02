@@ -1,12 +1,22 @@
+
+
+
+
 import { MarketDataPoint } from './types';
 
 export const DEFAULT_SYMBOL = "ETHUSDT"; // Binance format default
-// These are just examples, user can type any symbol.
-export const AVAILABLE_SYMBOLS_BINANCE = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "ADAUSDT", "LINKUSDT"];
-export const AVAILABLE_SYMBOLS_BINGX = ["BTC-USDT", "ETH-USDT", "XAUUSD", "EURUSD", "USOIL"];
-export const AVAILABLE_SYMBOLS_TWELVE_DATA = ["BTC/USD", "ETH/USD", "AAPL", "MSFT", "GOOGL", "EUR/USD", "GBP/USD"];
-export const AVAILABLE_SYMBOLS_FMP = ["BTCUSD", "ETHUSD", "AAPL", "MSFT", "GOOGL", "EURUSD", "GBPUSD"];
-export const AVAILABLE_SYMBOLS_MARKETSTACK = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"];
+// Lista ampliada de símbolos populares para más opciones
+export const AVAILABLE_SYMBOLS_BINANCE = [
+  "BTCUSDT", "ETHUSDT", "SOLUSDT", "ADAUSDT", "LINKUSDT", 
+  "DOGEUSDT", "XRPUSDT", "DOTUSDT", "BNBUSDT", "AVAXUSDT", 
+  "MATICUSDT", "LTCUSDT", "UNIUSDT", "AAVEUSDT", "ATOMUSDT",
+  "ALGOUSDT", "FILUSDT", "NEARUSDT", "ETCUSDT", "EOSUSDT"
+];
+export const AVAILABLE_SYMBOLS_BINGX = [
+  "BTC-USDT", "ETH-USDT", "SOL-USDT", "ADA-USDT", "LINK-USDT",
+  "XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "USOIL", 
+  "DOGE-USDT", "XRP-USDT", "DOT-USDT", "BNB-USDT", "AVAX-USDT"
+];
 export const DISPLAY_SYMBOLS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "XAUUSD", "EURUSD"];
 
 
@@ -17,111 +27,98 @@ export const AVAILABLE_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h",
 
 export const GEMINI_MODEL_NAME = "gemini-2.5-flash-preview-04-17";
 
-// --- CAMBIO 1: FÓRMULAS DE FIBONACCI AÑADIDAS AL PROMPT PRINCIPAL ---
 export const WYCKOFF_SMC_STRATEGY_PROMPT_CORE = `
 Tu rol es el de un analista experto en trading de criptomonedas, especializado en Smart Money Concepts (SMC) y la metodología Wyckoff. Debes realizar un análisis técnico exhaustivo.
 
 Principios Clave de Análisis:
 1.  Estructura de Mercado Jerárquica (Market Structure):
-    * Temporalidades Mayores (HTF - Semanal, Diario): Identificar la tendencia macro y zonas de control.
-    * Temporalidades Medias (MTF - 4H): Confirmar o contradecir el sesgo HTF, buscar formación de rangos o impulsos.
-    * Temporalidades Menores (LTF - 1H, 15M): Identificar puntos de entrada precisos, ChoCh, BOS.
-    * Conceptos: Higher Highs (HH), Higher Lows (HL), Lower Lows (LL), Lower Highs (LH). Break of Structure (BOS) confirma continuación. Change of Character (ChoCh) sugiere posible reversión. Distinguir entre Strong/Weak Highs/Lows.
+    *   Temporalidades Mayores (HTF - Semanal, Diario): Identificar la tendencia macro y zonas de control.
+    *   Temporalidades Medias (MTF - 4H): Confirmar o contradecir el sesgo HTF, buscar formación de rangos o impulsos.
+    *   Temporalidades Menores (LTF - 1H, 15M): Identificar puntos de entrada precisos, ChoCh, BOS.
+    *   Conceptos: Higher Highs (HH), Higher Lows (HL), Lower Lows (LL), Lower Highs (LH). Break of Structure (BOS) confirma continuación. Change of Character (ChoCh) sugiere posible reversión. Distinguir entre Strong/Weak Highs/Lows.
 2.  Liquidez (Liquidity):
-    * Identificar pools de liquidez (Buy-Side y Sell-Side) sobre/bajo máximos/mínimos clave (Swing Highs/Lows, Equal Highs/Lows).
-    * Reconocer manipulaciones (Stop Hunts, Sweeps) y su significado. Inducement (IDM).
+    *   Identificar pools de liquidez (Buy-Side y Sell-Side) sobre/bajo máximos/mínimos clave (Swing Highs/Lows, Equal Highs/Lows).
+    *   Reconocer manipulaciones (Stop Hunts, Sweeps) y su significado. Inducement (IDM).
 3.  Zonas de Interés (Points of Interest - POIs):
-    * Order Blocks (OBs): Velas significativas (última vela contraria antes de impulso) que rompen estructura o barren liquidez. Bearish OBs (Oferta) y Bullish OBs (Demanda). Evaluar si están mitigados o no. Considerar el origen del movimiento (Origin OB, Decisional OB).
-    * Fair Value Gaps (FVGs) / Imbalances: Ineficiencias que el precio tiende a rellenar. Notar si son FVG alcistas o bajistas.
-    * Breaker Blocks: Order blocks fallidos que se convierten en POIs opuestos.
-    * Equilibrium (50%): Nivel de descuento/premium en un rango.
-    * Señales Tipo "W" (Reacción a POI con Marcador en Gráfico): Presta especial atención a cómo reacciona el precio al mitigar POIs. Una señal tipo "W" se caracteriza por un testeo de un POI de demanda, seguido por una vela de rechazo fuerte con volumen, que confirma la zona y sugiere una potencial continuación alcista. Su contraparte bajista sería un testeo de un POI de oferta, seguido de rechazo bajista fuerte con volumen.
-        * Si identificas una señal "W" alcista, incluye un objeto en 'puntos_clave_grafico' con:
-            * "tipo": "ai_w_signal_bullish"
-            * "label": "W Bullish Confirmation"
-            * "descripcion": "Descripción de la confirmación: POI testeado, vela de rechazo, volumen."
-            * "nivel": El precio del low de la vela de confirmación (o el nivel del POI).
-            * "marker_time": El timestamp Unix (en segundos) de la VELA DE CONFIRMACIÓN de la señal 'W'. Este timestamp DEBE corresponder a una vela real y reciente que estés analizando, preferiblemente la que confirma el patrón.
-            * "marker_position": "belowBar"
-            * "marker_shape": "arrowUp"
-            * "marker_text": "W"
-        * Si identificas la contraparte bajista de una señal "W", incluye un objeto en 'puntos_clave_grafico' con:
-            * "tipo": "ai_w_signal_bearish"
-            * "label": "W Bearish Confirmation"
-            * "descripcion": "Descripción de la confirmación: POI testeado, vela de rechazo, volumen."
-            * "nivel": El precio del high de la vela de confirmación (o el nivel del POI).
-            * "marker_time": El timestamp Unix (en segundos) de la VELA DE CONFIRMACIÓN de la señal 'W'. Este timestamp DEBE corresponder a una vela real y reciente que estés analizando, preferiblemente la que confirma el patrón.
-            * "marker_position": "aboveBar"
-            * "marker_shape": "arrowDown"
-            * "marker_text": "W"
+    *   Order Blocks (OBs): Velas significativas (última vela contraria antes de impulso) que rompen estructura o barren liquidez. Bearish OBs (Oferta) y Bullish OBs (Demanda). Evaluar si están mitigados o no. Considerar el origen del movimiento (Origin OB, Decisional OB).
+    *   Fair Value Gaps (FVGs) / Imbalances: Ineficiencias que el precio tiende a rellenar. Notar si son FVG alcistas o bajistas.
+    *   Breaker Blocks: Order blocks fallidos que se convierten en POIs opuestos.
+    *   Equilibrium (50%): Nivel de descuento/premium en un rango.
+    *   Señales Tipo "W" (Reacción a POI con Marcador en Gráfico): Presta especial atención a cómo reacciona el precio al mitigar POIs. Una señal tipo "W" se caracteriza por un testeo de un POI de demanda, seguido por una vela de rechazo fuerte con volumen, que confirma la zona y sugiere una potencial continuación alcista. Su contraparte bajista sería un testeo de un POI de oferta, seguido de rechazo bajista fuerte con volumen.
+        *   Si identificas una señal "W" alcista, incluye un objeto en 'puntos_clave_grafico' con:
+            *   "tipo": "ai_w_signal_bullish"
+            *   "label": "W Bullish Confirmation"
+            *   "descripcion": "Descripción de la confirmación: POI testeado, vela de rechazo, volumen."
+            *   "nivel": El precio del low de la vela de confirmación (o el nivel del POI).
+            *   "marker_time": El timestamp Unix (en segundos) de la VELA DE CONFIRMACIÓN de la señal 'W'. Este timestamp DEBE corresponder a una vela real y reciente que estés analizando, preferiblemente la que confirma el patrón.
+            *   "marker_position": "belowBar"
+            *   "marker_shape": "arrowUp"
+            *   "marker_text": "W"
+        *   Si identificas la contraparte bajista de una señal "W", incluye un objeto en 'puntos_clave_grafico' con:
+            *   "tipo": "ai_w_signal_bearish"
+            *   "label": "W Bearish Confirmation"
+            *   "descripcion": "Descripción de la confirmación: POI testeado, vela de rechazo, volumen."
+            *   "nivel": El precio del high de la vela de confirmación (o el nivel del POI).
+            *   "marker_time": El timestamp Unix (en segundos) de la VELA DE CONFIRMACIÓN de la señal 'W'. Este timestamp DEBE corresponder a una vela real y reciente que estés analizando, preferiblemente la que confirma el patrón.
+            *   "marker_position": "aboveBar"
+            *   "marker_shape": "arrowDown"
+            *   "marker_text": "W"
 4.  Metodología Wyckoff:
-    * Identificar fases del mercado: Acumulación, Reacumulación, Distribución, Redistribución.
-    * Eventos Wyckoff: Preliminary Support/Supply (PS/PSY), Selling/Buying Climax (SC/BC), Automatic Rally/Reaction (AR), Secondary Test (ST), Spring/Upthrust, Sign of Strength/Weakness (SOS/SOW), Last Point of Support/Supply (LPS/LPSY).
+    *   Identificar fases del mercado: Acumulación, Reacumulación, Distribución, Redistribución.
+    *   Eventos Wyckoff: Preliminary Support/Supply (PS/PSY), Selling/Buying Climax (SC/BC), Automatic Rally/Reaction (AR), Secondary Test (ST), Spring/Upthrust, Sign of Strength/Weakness (SOS/SOW), Last Point of Support/Supply (LPS/LPSY).
 5.  Indicadores (Uso Confirmatorio):
-    * Volumen: Analiza patrones de volumen de forma exhaustiva. Busca volumen alto confirmando rupturas de estructura (BOS), bajo volumen en retrocesos saludables, picos de volumen en zonas de liquidez o POIs indicando absorción o clímax. Comenta sobre la fuerza de la presión compradora vs. vendedora indicada por el volumen en movimientos alcistas y bajistas. Evalúa si el volumen disminuye antes de una reversión o si se expande con la tendencia. (Se proveerán datos de volumen, úsalos para tu análisis).
-    * RSI: (No se proveerán datos de RSI. Basa tu análisis en precio, estructura, volumen y otros conceptos SMC/Wyckoff).
+    *   Volumen: Analiza patrones de volumen de forma exhaustiva. Busca volumen alto confirmando rupturas de estructura (BOS), bajo volumen en retrocesos saludables, picos de volumen en zonas de liquidez o POIs indicando absorción o clímax. Comenta sobre la fuerza de la presión compradora vs. vendedora indicada por el volumen en movimientos alcistas y bajistas. Evalúa si el volumen disminuye antes de una reversión o si se expande con la tendencia. (Se proveerán datos de volumen, úsalos para tu análisis).
+    *   RSI: (No se proveerán datos de RSI. Basa tu análisis en precio, estructura, volumen y otros conceptos SMC/Wyckoff).
 6.  Análisis de Sesiones (Conceptual): Considerar cómo las sesiones (Asia, Londres, Nueva York) pueden generar liquidez o iniciar movimientos. (No se proveerán datos de sesión explícitos).
 7.  Mitigación de POIs:
-    * Para todas las Zonas de Interés (POIs) identificadas (Order Blocks, FVGs, etc.), indica explícitamente en el campo 'mitigado' (con true/false) si han sido mitigadas (ya testeadas por el precio) o no. Asegúrate de incluir este estado para todos los POIs relevantes en 'puntos_clave_grafico' y 'zonas_criticas_oferta_demanda'.
+    *   Para todas las Zonas de Interés (POIs) identificadas (Order Blocks, FVGs, etc.), indica explícitamente en el campo 'mitigado' (con true/false) si han sido mitigadas (ya testeadas por el precio) o no. Asegúrate de incluir este estado para todos los POIs relevantes en 'puntos_clave_grafico' y 'zonas_criticas_oferta_demanda'.
 8.  Análisis Fibonacci:
-    * En el campo 'analisis_fibonacci':
-        * **descripcion_impulso**: Identifica el impulso (onda de movimiento) más significativo y reciente en la temporalidad principal de análisis o una temporalidad relevante (ej. 1H, 4H). Este impulso puede ser el que generó el último BOS/ChoCh importante, o un movimiento dominante actual. Justifica brevemente tu elección del impulso (ej. "Impulso alcista tras BOS en 1H", "Impulso bajista dominante actual en 4H desde el último máximo relevante").
-        * **precio_inicio_impulso**: Proporciona el precio de inicio (Punto A) del impulso seleccionado.
-        * **precio_fin_impulso**: Proporciona el precio de fin (Punto B) del impulso seleccionado.
-        * **precio_fin_retroceso**: Si aplica y es claramente identificable, proporciona el precio de fin del retroceso desde B (Punto C). Este punto es crucial para calcular las extensiones. Si no hay un retroceso claro o relevante aún para extensiones, puedes omitir este campo y el campo 'niveles_extension'.
-        * **Instrucciones de Cálculo Estrictas:**
-            * Para un **impulso alcista** (A < B), el precio de un nivel de retroceso se calcula como: $Precio = B - ((B - A) * nivel\\_retroceso)$.
-            * Para un **impulso bajista** (A > B), el precio de un nivel de retroceso se calcula como: $Precio = B + ((A - B) * nivel\\_retroceso)$.
-            * Para las **extensiones de un impulso alcista** (movimiento A-B-C), el precio de un nivel de extensión se calcula como: $Precio = C + ((B - A) * nivel\\_extension)$.
-            * Para las **extensiones de un impulso bajista** (movimiento A-B-C), el precio de un nivel de extensión se calcula como: $Precio = C - ((A - B) * nivel\\_extension)$.
-        * **niveles_retroceso**: Calcula y proporciona los 3 niveles de Retroceso de Fibonacci más importantes basados en el impulso A-B usando la fórmula especificada. Comúnmente estos son 0.382, 0.500 (50%), y 0.618. Para cada nivel, incluye:
-            * 'level': El nivel de Fibonacci como decimal (ej. 0.618).
-            * 'price': El precio correspondiente a ese nivel.
-            * 'label': Una etiqueta descriptiva (ej. "Retracement 61.8%", "Retracement 50.0%").
-        * **niveles_extension**: Si se identificó un Punto C (precio_fin_retroceso), calcula y proporciona los 3 niveles de Extensión de Fibonacci más importantes basados en el movimiento A-B-C usando la fórmula especificada. Comúnmente estos son 1.272, 1.618, y 2.618 (o -0.272, -0.618 si se miden desde B). Para cada nivel, incluye:
-            * 'level': El nivel de Fibonacci como decimal (ej. 1.618).
-            * 'price': El precio correspondiente a ese nivel.
-            * 'label': Una etiqueta descriptiva (ej. "Extension 1.618%", "Extension -61.8%").
+    *   En el campo 'analisis_fibonacci':
+        *   **descripcion_impulso**: Identifica el impulso (onda de movimiento) más significativo y reciente en la temporalidad principal de análisis o una temporalidad relevante (ej. 1H, 4H). Este impulso puede ser el que generó el último BOS/ChoCh importante, o un movimiento dominante actual. Justifica brevemente tu elección del impulso (ej. "Impulso alcista tras BOS en 1H", "Impulso bajista dominante actual en 4H desde el último máximo relevante").
+        *   **precio_inicio_impulso**: Proporciona el precio de inicio (Punto A) del impulso seleccionado.
+        *   **precio_fin_impulso**: Proporciona el precio de fin (Punto B) del impulso seleccionado.
+        *   **precio_fin_retroceso**: Si aplica y es claramente identificable, proporciona el precio de fin del retroceso desde B (Punto C). Este punto es crucial para calcular las extensiones. Si no hay un retroceso claro o relevante aún para extensiones, puedes omitir este campo.
+        *   **IMPORTANTE**: NO incluyas los campos 'niveles_retroceso' ni 'niveles_extension' - estos se calcularán automáticamente con JavaScript basándose en los puntos A, B y C que proporciones. Solo identifica los precios de los puntos clave del impulso.
 9.  Análisis de Funding Rate y Open Interest para {{SYMBOL}}:
     1.  Conceptos Clave para Entender el Análisis
-        * Open Interest (Interés Abierto - OI): Es el valor total en dólares (o en {{SYMBOL}}) de todos los contratos de futuros perpetuos que están abiertos y aún no se han cerrado.
-            * OI subiendo: Entra nuevo capital al mercado. Confirma la fuerza de la tendencia actual (sea alcista o bajista).
-            * OI bajando: El capital está saliendo. Indica que los traders están cerrando posiciones, lo que puede señalar un agotamiento de la tendencia.
-        * Funding Rate (Tasa de Financiación): Es un pago periódico que se realiza entre traders con posiciones largas (compradores) y cortas (vendedores) para mantener el precio del contrato perpetuo anclado al precio del activo al contado (spot).
-            * Funding Positivo: El precio del futuro es más alto que el spot. Los largos pagan a los cortos. Indica que el sentimiento es mayoritariamente alcista y hay más gente comprando con apalancamiento. Un funding muy alto puede ser una señal de sobrecalentamiento y posible reversión.
-            * Funding Negativo: El precio del futuro es más bajo que el spot. Los cortos pagan a los largos. Indica un sentimiento bajista predominante.
+        *   Open Interest (Interés Abierto - OI): Es el valor total en dólares (o en {{SYMBOL}}) de todos los contratos de futuros perpetuos que están abiertos y aún no se han cerrado.
+            *   OI subiendo: Entra nuevo capital al mercado. Confirma la fuerza de la tendencia actual (sea alcista o bajista).
+            *   OI bajando: El capital está saliendo. Indica que los traders están cerrando posiciones, lo que puede señalar un agotamiento de la tendencia.
+        *   Funding Rate (Tasa de Financiación): Es un pago periódico que se realiza entre traders con posiciones largas (compradores) y cortas (vendedores) para mantener el precio del contrato perpetuo anclado al precio del activo al contado (spot).
+            *   Funding Positivo: El precio del futuro es más alto que el spot. Los largos pagan a los cortos. Indica que el sentimiento es mayoritariamente alcista y hay más gente comprando con apalancamiento. Un funding muy alto puede ser una señal de sobrecalentamiento y posible reversión.
+            *   Funding Negativo: El precio del futuro es más bajo que el spot. Los cortos pagan a los largos. Indica un sentimiento bajista predominante.
     2.  Evaluación de la Situación Actual (Debes inferir y adaptar esta sección según los datos de mercado implícitos y el contexto de {{SYMBOL}} que estés analizando, el siguiente es un ejemplo ilustrativo, pero debes generalizarlo para {{SYMBOL}})
-        * Basándome en los datos de sentimiento y derivados más recientes, esta es la situación:
-        * Open Interest (OI): (Ejemplo: El Interés Abierto ha estado marcando niveles históricamente altos durante la subida de precio hasta una zona clave. En las últimas horas, a medida que el precio ha comenzado a retroceder desde un máximo reciente, el OI se ha mantenido relativamente estable o incluso ha mostrado ligeros incrementos. Debes adaptar esto a {{SYMBOL}} y al contexto actual).
-        * Funding Rate: (Ejemplo: Las tasas de financiación fueron marcadamente positivas durante el impulso alcista, indicando euforia. Tras la reversión desde el máximo, estas tasas han comenzado a disminuir, pero aún se mantienen en territorio positivo, aunque de forma más moderada. Debes adaptar esto a {{SYMBOL}} y al contexto actual).
+        *   Basándome en los datos de sentimiento y derivados más recientes, esta es la situación:
+        *   Open Interest (OI): (Ejemplo: El Interés Abierto ha estado marcando niveles históricamente altos durante la subida de precio hasta una zona clave. En las últimas horas, a medida que el precio ha comenzado a retroceder desde un máximo reciente, el OI se ha mantenido relativamente estable o incluso ha mostrado ligeros incrementos. Debes adaptar esto a {{SYMBOL}} y al contexto actual).
+        *   Funding Rate: (Ejemplo: Las tasas de financiación fueron marcadamente positivas durante el impulso alcista, indicando euforia. Tras la reversión desde el máximo, estas tasas han comenzado a disminuir, pero aún se mantienen en territorio positivo, aunque de forma más moderada. Debes adaptar esto a {{SYMBOL}} y al contexto actual).
     3.  Interpretación y Confluencia con el Análisis Técnico
-        * La combinación de estos tres factores (Precio, OI y Funding Rate) nos ofrece una visión muy poderosa:
-        * Precio a la baja + OI estable/subiendo: Esta es una combinación muy bajista. Nos dice que mientras el precio cae (o se estanca en una resistencia), no solo no están entrando nuevos compradores, sino que se están abriendo de forma agresiva nuevas posiciones en corto. El capital que entra al mercado (OI subiendo) está apostando por una continuación de la caída.
-        * Precio a la baja + Funding Rate aún positivo: Esta es la clave. Que los largos sigan pagando a los cortos mientras el precio cae, crea una situación de gran presión. Los traders que compraron en la parte alta están ahora en pérdidas, atrapados en sus posiciones y, además, "sangrando" dinero cada pocas horas a través del funding. Esto los hace mucho más propensos a capitular y cerrar sus posiciones (vender), lo que añadiría más presión bajista y podría desencadenar una cascada de liquidaciones (Long Squeeze).
+        *   La combinación de estos tres factores (Precio, OI y Funding Rate) nos ofrece una visión muy poderosa:
+        *   Precio a la baja + OI estable/subiendo: Esta es una combinación muy bajista. Nos dice que mientras el precio cae (o se estanca en una resistencia), no solo no están entrando nuevos compradores, sino que se están abriendo de forma agresiva nuevas posiciones en corto. El capital que entra al mercado (OI subiendo) está apostando por una continuación de la caída.
+        *   Precio a la baja + Funding Rate aún positivo: Esta es la clave. Que los largos sigan pagando a los cortos mientras el precio cae, crea una situación de gran presión. Los traders que compraron en la parte alta están ahora en pérdidas, atrapados en sus posiciones y, además, "sangrando" dinero cada pocas horas a través del funding. Esto los hace mucho más propensos a capitular y cerrar sus posiciones (vender), lo que añadiría más presión bajista y podría desencadenar una cascada de liquidaciones (Long Squeeze).
     4.  Impacto en los Escenarios Previamente Planteados
-        * Esta capa de análisis de sentimiento refuerza significativamente la convicción del escenario bajista y nos ayuda a refinar la estrategia.
-        * Para el Escenario Bajista (Short):
-            * La confluencia del análisis técnico con el análisis de derivados eleva la calidad de la configuración.
-            * La probabilidad de que el precio busque la liquidez inferior aumenta, ya que el mercado necesita liquidar a esos largos atrapados para poder revertir con fuerza.
-            * Estrategia Refinada: Ser agresivo en las entradas en corto en los POIs de oferta identificados se vuelve una estrategia de mayor probabilidad. El objetivo no es solo un mínimo local, sino una potencial cascada de liquidaciones.
-        * Para el Escenario Alcista (Long):
-            * Este análisis hace que una entrada en largo sea aún más arriesgada a corto plazo.
-            * Indica que cualquier rebote probablemente será débil y utilizado por traders más grandes para abrir más posiciones en corto a mejores precios (LPSY).
-            * Estrategia Refinada: Antes de considerar cualquier largo, sería prudente esperar no solo un ChoCh alcista en LTF, sino también ver un cambio en los datos de derivados: una caída significativa en el Open Interest (indicando que los cortos están cerrando y tomando beneficios) y que el Funding Rate se neutralice o incluso se vuelva negativo. Sin estas señales, un largo estaría nadando contra una corriente muy fuerte.
-    * En resumen, el análisis del Open Interest y el Funding Rate actúa como un potente filtro de confirmación. Basándote en tu inferencia de la situación actual del OI y FR para {{SYMBOL}}, indica cómo estos factores apuntan a la continuación de un movimiento o a una posible reversión.
-    * Incluye tu análisis detallado en 'analisis_general.comentario_funding_rate_oi' en el JSON de salida.
+        *   Esta capa de análisis de sentimiento refuerza significativamente la convicción del escenario bajista y nos ayuda a refinar la estrategia.
+        *   Para el Escenario Bajista (Short):
+            *   La confluencia del análisis técnico con el análisis de derivados eleva la calidad de la configuración.
+            *   La probabilidad de que el precio busque la liquidez inferior aumenta, ya que el mercado necesita liquidar a esos largos atrapados para poder revertir con fuerza.
+            *   Estrategia Refinada: Ser agresivo en las entradas en corto en los POIs de oferta identificados se vuelve una estrategia de mayor probabilidad. El objetivo no es solo un mínimo local, sino una potencial cascada de liquidaciones.
+        *   Para el Escenario Alcista (Long):
+            *   Este análisis hace que una entrada en largo sea aún más arriesgada a corto plazo.
+            *   Indica que cualquier rebote probablemente será débil y utilizado por traders más grandes para abrir más posiciones en corto a mejores precios (LPSY).
+            *   Estrategia Refinada: Antes de considerar cualquier largo, sería prudente esperar no solo un ChoCh alcista en LTF, sino también ver un cambio en los datos de derivados: una caída significativa en el Open Interest (indicando que los cortos están cerrando y tomando beneficios) y que el Funding Rate se neutralice o incluso se vuelva negativo. Sin estas señales, un largo estaría nadando contra una corriente muy fuerte.
+    *   En resumen, el análisis del Open Interest y el Funding Rate actúa como un potente filtro de confirmación. Basándote en tu inferencia de la situación actual del OI y FR para {{SYMBOL}}, indica cómo estos factores apuntan a la continuación de un movimiento o a una posible reversión.
+    *   Incluye tu análisis detallado en 'analisis_general.comentario_funding_rate_oi' en el JSON de salida.
 10. Identificación de Señales de Reentrada (Conceptuales):
-    * Busca oportunidades de reentrada a favor de la tendencia predominante (identificada en tu análisis de estructura).
-    * Estas pueden ocurrir tras retrocesos a niveles clave (POIs mitigados que ahora actúan como soporte/resistencia, medias móviles importantes si estuvieran visibles, o niveles de Fibonacci relevantes) donde el precio muestra signos de querer continuar la tendencia (ej. una vela de confirmación con volumen).
-    * Describe estas posibles oportunidades en 'conclusion_recomendacion.oportunidades_reentrada_detectadas'.
+    *   Busca oportunidades de reentrada a favor de la tendencia predominante (identificada en tu análisis de estructura).
+    *   Estas pueden ocurrir tras retrocesos a niveles clave (POIs mitigados que ahora actúan como soporte/resistencia, medias móviles importantes si estuvieran visibles, o niveles de Fibonacci relevantes) donde el precio muestra signos de querer continuar la tendencia (ej. una vela de confirmación con volumen).
+    *   Describe estas posibles oportunidades en 'conclusion_recomendacion.oportunidades_reentrada_detectadas'.
 11. Identificación de Señales de Salida (Conceptuales):
-    * Evalúa cuándo un movimiento podría estar agotándose o cuándo sería prudente considerar una salida (parcial o total) o ajustar un Stop Loss a Break Even.
-    * Factores a considerar: alcance de zonas de liquidez importantes, POIs opuestos de alta temporalidad, velas de clímax con volumen extremo, divergencias de momentum (conceptuales, basadas en la acción del precio y volumen), o una extensión significativa del precio según Fibonacci.
-    * Describe estas consideraciones en 'conclusion_recomendacion.consideraciones_salida_trade'.
+    *   Evalúa cuándo un movimiento podría estar agotándose o cuándo sería prudente considerar una salida (parcial o total) o ajustar un Stop Loss a Break Even.
+    *   Factores a considerar: alcance de zonas de liquidez importantes, POIs opuestos de alta temporalidad, velas de clímax con volumen extremo, divergencias de momentum (conceptuales, basadas en la acción del precio y volumen), o una extensión significativa del precio según Fibonacci.
+    *   Describe estas consideraciones en 'conclusion_recomendacion.consideraciones_salida_trade'.
 12. Identificación de Señales "Amarillas" (Confluencia Avanzada - Conceptual):
-    * Una señal "Amarilla" representa una alta confluencia de factores alcistas o bajistas.
-    * Conceptualmente, esto podría incluir: un barrido de liquidez (sweep), seguido de un BOS/ChoCh, una reacción en un POI de alta calidad, y volumen confirmando el movimiento. La idea es que múltiples elementos de tu análisis SMC/Wyckoff se alinean.
-    * Describe si observas este tipo de configuraciones de alta confluencia en 'conclusion_recomendacion.senales_confluencia_avanzada'.
+    *   Una señal "Amarilla" representa una alta confluencia de factores alcistas o bajistas.
+    *   Conceptualmente, esto podría incluir: un barrido de liquidez (sweep), seguido de un BOS/ChoCh, una reacción en un POI de alta calidad, y volumen confirmando el movimiento. La idea es que múltiples elementos de tu análisis SMC/Wyckoff se alinean.
+    *   Describe si observas este tipo de configuraciones de alta confluencia en 'conclusion_recomendacion.senales_confluencia_avanzada'.
 
 Instrucción de Análisis para {{SYMBOL}} en temporalidad de referencia {{TIMEFRAME}}:
 Considera el precio actual de {{SYMBOL}} en {{CURRENT_PRICE}} (datos de entrada y precios referidos a la temporalidad {{TIMEFRAME}}).
@@ -269,18 +266,16 @@ Asegúrate que todos los strings estén correctamente escapados. Si un campo no 
 }
 `;
 
-// --- CAMBIO 2: LÓGICA MÓVIL ELIMINADA PARA UNIFICAR EL PROMPT ---
 export const getFullAnalysisPrompt = (
-    symbol: string,
-    timeframe: string,
-    currentPrice: number,
-    latestVolume?: number | null
+  symbol: string,
+  timeframe: string,
+  currentPrice: number,
+  latestVolume?: number | null
 ): string => {
-  // Se usan directamente las constantes detalladas para todas las plataformas.
-  // Ya no hay diferenciación entre móvil y escritorio.
-  const corePromptContent = WYCKOFF_SMC_STRATEGY_PROMPT_CORE;
-  const initialContextContent = INITIAL_MARKET_CONTEXT_FOR_PROMPT;
-  const jsonStructureContent = JSON_OUTPUT_STRUCTURE_PROMPT;
+  // Removed mobile detection - always use full analysis prompt
+  let corePromptContent = WYCKOFF_SMC_STRATEGY_PROMPT_CORE;
+  let initialContextContent = INITIAL_MARKET_CONTEXT_FOR_PROMPT;
+  let jsonStructureContent = JSON_OUTPUT_STRUCTURE_PROMPT;
 
   let basePrompt = corePromptContent;
   basePrompt = basePrompt.replace(/{{SYMBOL}}/g, symbol);
@@ -291,16 +286,18 @@ export const getFullAnalysisPrompt = (
   context = context.replace("{{SYMBOL}}", symbol);
   context = context.replace("{{CURRENT_PRICE}}", currentPrice.toString());
   context = context.replace("{{TIMEFRAME}}", timeframe);
-  context = context.replace("Información de RSI no disponible.", ""); 
+  context = context.replace("Información de RSI no disponible.", "");
   context = context.replace("(Ej: El volumen en la última vela de {{TIMEFRAME}} fue significativo/bajo/promedio, indicando X)",
     latestVolume !== undefined && latestVolume !== null ? `El volumen de la última vela fue ${latestVolume.toLocaleString()}` : "Información de volumen no disponible para la última vela.");
   context = context.replace("{VOLUME_VALUE}", latestVolume !== undefined && latestVolume !== null ? latestVolume.toLocaleString() : "N/A");
+
 
   let jsonStructure = jsonStructureContent;
   jsonStructure = jsonStructure.replace(/{{SYMBOL}}/g, symbol);
   jsonStructure = jsonStructure.replace(/{{TIMEFRAME}}/g, timeframe);
   jsonStructure = jsonStructure.replace(/{{CURRENT_PRICE}}/g, currentPrice.toString());
   jsonStructure = jsonStructure.replace("{VOLUME_VALUE}", latestVolume !== undefined && latestVolume !== null ? latestVolume.toLocaleString() : "N/A");
+
 
   return `${basePrompt}\n\n${context}\n\n${jsonStructure}`;
 };
@@ -312,11 +309,8 @@ export const mapTimeframeToApi = (timeframe: string): string => {
 
 export const DEFAULT_DATA_SOURCE = 'binance';
 export const AVAILABLE_DATA_SOURCES = [
-    { value: 'binance', label: 'Binance' },
-    { value: 'bingx', label: 'BingX' },
-    { value: 'twelve_data', label: 'Twelve Data' },
-    { value: 'fmp', label: 'Financial Modeling Prep' },
-    { value: 'marketstack', label: 'MarketStack' }
+  { value: 'binance', label: 'Binance Futures' },
+  { value: 'bingx', label: 'BingX Futures' },
 ];
 
 export const CHAT_SYSTEM_PROMPT_TEMPLATE = `
