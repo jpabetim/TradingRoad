@@ -1507,9 +1507,9 @@ def translate_text(text, target_language='en'):
 
 @app.route('/analysis')
 def analysis():
-    """Servir página de análisis directamente desde el backend"""
+    """Servir página de análisis avanzado desde el backend"""
     try:
-        return render_template('analysis.html')
+        return render_template('analysis_advanced.html')
     except Exception as e:
         print(f"Error sirviendo análisis: {e}")
         # Fallback: si no existe el template, redirigir al frontend
@@ -1517,19 +1517,22 @@ def analysis():
         return redirect(frontend_url, code=302)
 
 if __name__ == '__main__':
-    print("=== INICIANDO TRADEROAD FLASK APP ===")
+    # Solo ejecutar Flask directamente en desarrollo local
+    # En producción se usa Gunicorn, por lo que esto no se ejecutará
+    print("=== INICIANDO TRADEROAD FLASK APP (DESARROLLO) ===")
     
-    # Obtener puerto de la variable de entorno (Render lo proporciona)
+    # Obtener puerto de la variable de entorno (Render lo proporciona)  
     port = int(os.getenv('PORT', 5007))
     debug_mode = os.getenv('DEBUG', 'false').lower() == 'true'
     
     print(f"Backend API: Running on port {port}")
     if os.getenv('RENDER'):
-        print(f"Production URL: https://{os.getenv('RENDER_SERVICE_NAME', 'tradingroad-python')}.onrender.com")
+        print("WARNING: Ejecutándose en modo desarrollo en producción!")
+        print("Debería usar Gunicorn en su lugar.")
     else:
         print(f"Local URL: http://localhost:{port}")
     print(f"Debug mode: {debug_mode}")
     print("==========================================")
     
-    # Ejecutar Flask con configuración para producción
+    # Ejecutar Flask con configuración para desarrollo
     app.run(debug=debug_mode, host='0.0.0.0', port=port)
