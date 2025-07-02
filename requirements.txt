@@ -27,6 +27,11 @@ eventlet==0.33.3
 # AI and Machine Learning
 google-generativeai==0.7.2
 
+# Web Scraping and Feed Parsing
+beautifulsoup4==4.13.4
+feedparser==6.0.11
+lxml==6.0.0
+
 # Additional Dependencies
 Werkzeug==2.3.7
 click==8.1.7

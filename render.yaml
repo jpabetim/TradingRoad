@@ -47,7 +47,3 @@ services:
       - key: VITE_FMP_API_KEY
         sync: false
     autoDeploy: true
-        sync: false
-      - key: VITE_FMP_API_KEY
-        sync: false
-    autoDeploy: true
