@@ -3,6 +3,9 @@ import RealTimeTradingChart from './components/RealTimeTradingChart';
 import AnalysisPanel from './components/AnalysisPanel';
 import ApiKeyMessage from './components/ApiKeyMessage';
 import DisplaySettingsDialog from './components/DisplaySettingsDialog';
+import MarketDashboard from './components/MarketDashboard';
+import NewsPanel from './components/NewsPanel';
+import TestConnectivity from './components/TestConnectivity';
 import { GeminiAnalysisResult, DataSource, MovingAverageConfig } from './types';
 import { analyzeChartWithGemini, ExtendedGeminiRequestPayload } from './services/geminiService';
 import { DEFAULT_SYMBOL, DEFAULT_TIMEFRAME, DEFAULT_DATA_SOURCE, AVAILABLE_DATA_SOURCES, AVAILABLE_TIMEFRAMES, AVAILABLE_SYMBOLS_BINANCE, AVAILABLE_SYMBOLS_BINGX } from './constants';
@@ -34,6 +37,7 @@ export interface ChatMessage {
 
 type Theme = 'dark' | 'light';
 export type AnalysisPanelMode = 'initial' | 'analysis' | 'chat';
+type AppView = 'trading' | 'dashboard' | 'test';
 
 const initialMAs: MovingAverageConfig[] = [
   { id: 'ma1', type: 'EMA', period: 12, color: '#34D399', visible: true },
@@ -80,6 +84,9 @@ const getConsistentSymbolForDataSource = (symbol: string, ds: DataSource): strin
 
 
 const App: React.FC = () => {
+  // Navigation state
+  const [currentView, setCurrentView] = useState<AppView>('dashboard'); // Empezar con dashboard
+
   const initialRawSymbol = getLocalStorageItem('traderoad_actualSymbol', DEFAULT_SYMBOL);
   const initialDataSource = getLocalStorageItem('traderoad_dataSource', DEFAULT_DATA_SOURCE);
   const consistentInitialSymbol = getConsistentSymbolForDataSource(initialRawSymbol, initialDataSource);
@@ -360,7 +367,17 @@ const App: React.FC = () => {
     ]);
 
     try {
-      const response = await fetch('/api/ai/assistant', {
+      // ========= CORRECCIÓN IMPORTANTE AQUÍ =========
+      // Usamos la variable de entorno para la URL del backend en producción.
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error("La URL del backend no está configurada. Revisa VITE_BACKEND_URL.");
+      }
+
+      // La llamada fetch ahora usa la URL completa.
+      // NOTA: He quitado el prefijo "/api" asumiendo que tu backend en Flask no lo usa.
+      // Si tus rutas en Flask SÍ empiezan por /api, la URL debería ser: `${backendUrl}/api/ai/assistant`
+      const response = await fetch(`${backendUrl}/ai/assistant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -381,6 +398,7 @@ const App: React.FC = () => {
           }
         }),
       });
+      // ===============================================
 
       if (!response.ok) {
         throw new Error(`Error del servidor: ${response.status}`);
@@ -503,11 +521,10 @@ const App: React.FC = () => {
         <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
           <div
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => {
-              // URL dinámica: usar variable de entorno o fallback para desarrollo
-              const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5007';
-              window.location.href = `${backendUrl}/dashboard`;
-            }}
+            // ========= CORRECCIÓN IMPORTANTE AQUÍ =========
+            // En lugar de redirigir a otra página, cambiamos la vista interna de React
+            onClick={() => setCurrentView('dashboard')}
+            // ===============================================
           >
             <img
               src="/logo-tradingroad.png"
@@ -704,36 +721,77 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right side: AI buttons and control buttons */}
+        {/* Right side: Navigation, AI buttons and control buttons */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* AI Analysis Button */}
+          {/* Navigation buttons */}
           <button
-            onClick={handleRequestAnalysis}
-            disabled={analysisLoading || chatLoading || !apiKeyPresent || isChartLoading}
-            title="Análisis IA del gráfico"
-            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
-              ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
-              : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
-              }`}
+            onClick={() => setCurrentView('dashboard')}
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${
+              currentView === 'dashboard'
+                ? (theme === 'dark' ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white')
+                : (theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700')
+            }`}
           >
-            {analysisLoading ? 'Analizando...' : 'Análisis IA'}
+            Dashboard
+          </button>
+          
+          <button
+            onClick={() => setCurrentView('trading')}
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${
+              currentView === 'trading'
+                ? (theme === 'dark' ? 'bg-sky-600 text-white' : 'bg-sky-500 text-white')
+                : (theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700')
+            }`}
+          >
+            Trading
           </button>
 
-          {/* AI Assistant Button */}
           <button
-            onClick={handleShowChat}
-            disabled={analysisLoading || chatLoading || !apiKeyPresent}
-            title="Asistente IA de trading"
-            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
-              ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
-              : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
-              }`}
+            onClick={() => setCurrentView('test')}
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${
+              currentView === 'test'
+                ? (theme === 'dark' ? 'bg-orange-600 text-white' : 'bg-orange-500 text-white')
+                : (theme === 'dark' ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700')
+            }`}
           >
-            {chatLoading ? 'Pensando...' : 'Asistente IA'}
+            Test API
           </button>
 
           {/* Separator */}
           <div className={`w-px h-6 ${theme === 'dark' ? 'bg-slate-600' : 'bg-gray-300'}`}></div>
+
+          {/* AI Analysis Button - Solo visible en vista Trading */}
+          {currentView === 'trading' && (
+            <>
+              <button
+                onClick={handleRequestAnalysis}
+                disabled={analysisLoading || chatLoading || !apiKeyPresent || isChartLoading}
+                title="Análisis IA del gráfico"
+                className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
+                  }`}
+              >
+                {analysisLoading ? 'Analizando...' : 'Análisis IA'}
+              </button>
+
+              {/* AI Assistant Button */}
+              <button
+                onClick={handleShowChat}
+                disabled={analysisLoading || chatLoading || !apiKeyPresent}
+                title="Asistente IA de trading"
+                className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded text-xs font-medium transition-colors ${theme === 'dark'
+                  ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-slate-600 disabled:text-slate-400'
+                  : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300 disabled:text-gray-500'
+                  }`}
+              >
+                {chatLoading ? 'Pensando...' : 'Asistente IA'}
+              </button>
+
+              {/* Separator */}
+              <div className={`w-px h-6 ${theme === 'dark' ? 'bg-slate-600' : 'bg-gray-300'}`}></div>
+            </>
+          )}
 
           <button
             onClick={() => setIsPanelVisible(!isPanelVisible)}
@@ -788,42 +846,88 @@ const App: React.FC = () => {
 
       <ApiKeyMessage apiKeyPresent={apiKeyPresent} />
 
-      <main className="flex-grow flex flex-col md:flex-row p-2 sm:p-4 gap-2 sm:gap-4 overflow-y-auto">
-        <div className={`w-full flex-1 flex flex-col gap-2 sm:gap-4 overflow-hidden order-1 ${(isPanelVisible && (analysisPanelMode !== 'initial')) ? 'md:order-2' : 'md:order-1'}`}>
-          <div className={`flex-grow min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-lg rounded-lg overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
-            <RealTimeTradingChart
-              dataSource={dataSource} symbol={actualSymbol} timeframe={timeframe}
-              analysisResult={analysisResult} onLatestChartInfoUpdate={handleLatestChartInfoUpdate}
-              onChartLoadingStateChange={handleChartLoadingStateChange}
-              onHistoricalDataUpdate={handleHistoricalDataUpdate}
-              movingAverages={movingAverages}
-              theme={theme} chartPaneBackgroundColor={chartPaneBackgroundColor}
-              volumePaneHeight={volumePaneHeight} showAiAnalysisDrawings={showAiAnalysisDrawings}
-              wSignalColor={wSignalColor} wSignalOpacity={wSignalOpacity / 100}
-              showWSignals={showWSignals}
-            />
+      <main className="flex-1 flex flex-col gap-2 sm:gap-4 md:gap-6 overflow-hidden min-h-0">
+        {/* VISTA DASHBOARD: Solo muestra el dashboard de mercado y noticias */}
+        {currentView === 'dashboard' && (
+          <div className="flex flex-col gap-4 h-full w-full">
+            <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Dashboard de Mercado
+            </h1>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Panel principal - Dashboard de mercado */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className={`p-6 rounded-lg shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+                  <MarketDashboard />
+                </div>
+              </div>
+              
+              {/* Panel lateral - Noticias */}
+              <div className="space-y-6">
+                <div className={`p-6 rounded-lg shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+                  <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    Noticias del Mercado
+                  </h2>
+                  <NewsPanel />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        {/* AI Panel - Solo visible cuando hay análisis o chat activo */}
-        {(analysisPanelMode !== 'initial') && (
-          <div
-            id="controls-analysis-panel"
-            className={`w-full md:w-80 lg:w-[360px] xl:w-[400px] flex-none flex flex-col gap-2 sm:gap-4 overflow-y-auto order-2 md:order-1 ${!isPanelVisible ? 'hidden' : ''}`}
-          >
-            <div className={`${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md flex-grow flex flex-col order-2 md:order-none`}>
-              <AnalysisPanel
-                panelMode={analysisPanelMode}
-                analysisResult={analysisResult}
-                analysisLoading={analysisLoading}
-                analysisError={analysisError}
-                chatMessages={chatMessages}
-                chatLoading={chatLoading}
-                chatError={chatError}
-                onSendMessage={handleSendMessageToChat}
-                onClearChatHistory={handleClearChatHistory}
-                theme={theme}
-                apiKeyPresent={apiKeyPresent}
-              />
+        )}
+
+        {/* VISTA TRADING: Solo muestra el gráfico y controles de trading */}
+        {currentView === 'trading' && (
+          <div className="flex flex-col md:flex-row gap-4 h-full">
+            {/* Contenido principal - Gráfico y controles */}
+            <div className="flex-1 flex flex-col gap-4">
+              <div className={`flex-grow min-h-[400px] sm:min-h-[500px] md:min-h-[600px] shadow-lg rounded-lg overflow-hidden ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+                <RealTimeTradingChart
+                  dataSource={dataSource} symbol={actualSymbol} timeframe={timeframe}
+                  analysisResult={analysisResult} onLatestChartInfoUpdate={handleLatestChartInfoUpdate}
+                  onChartLoadingStateChange={handleChartLoadingStateChange}
+                  onHistoricalDataUpdate={handleHistoricalDataUpdate}
+                  movingAverages={movingAverages}
+                  theme={theme} chartPaneBackgroundColor={chartPaneBackgroundColor}
+                  volumePaneHeight={volumePaneHeight} showAiAnalysisDrawings={showAiAnalysisDrawings}
+                  wSignalColor={wSignalColor} wSignalOpacity={wSignalOpacity / 100}
+                  showWSignals={showWSignals}
+                />
+              </div>
+            </div>
+            
+            {/* Panel de análisis - Solo visible cuando hay análisis o chat activo */}
+            {(analysisPanelMode !== 'initial') && (
+              <div
+                id="controls-analysis-panel"
+                className={`w-full md:w-80 lg:w-[360px] xl:w-[400px] flex-none flex flex-col gap-2 sm:gap-4 overflow-y-auto ${!isPanelVisible ? 'hidden' : ''}`}
+              >
+                <div className={`${theme === 'dark' ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md flex-grow flex flex-col`}>
+                  <AnalysisPanel
+                    panelMode={analysisPanelMode}
+                    analysisResult={analysisResult}
+                    analysisLoading={analysisLoading}
+                    analysisError={analysisError}
+                    chatMessages={chatMessages}
+                    chatLoading={chatLoading}
+                    chatError={chatError}
+                    onSendMessage={handleSendMessageToChat}
+                    onClearChatHistory={handleClearChatHistory}
+                    theme={theme}
+                    apiKeyPresent={apiKeyPresent}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentView === 'test' && (
+          <div className="flex flex-col gap-4 h-full">
+            <div className={`p-6 rounded-lg shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+              <h2 className={`text-xl font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Test de Conectividad API
+              </h2>
+              <TestConnectivity />
             </div>
           </div>
         )}
