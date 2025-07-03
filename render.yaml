@@ -3,8 +3,8 @@ services:
   - type: web
     name: tradingroad-backend
     runtime: python
-    region: oregon
-    plan: free
+    region: frankfurt
+    plan: Starter
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
     startCommand: "cd tradingroad_py && gunicorn --config ../gunicorn.conf.py app:app"
     healthCheckPath: "/dashboard"
@@ -37,8 +37,8 @@ services:
   - type: web
     name: tradingroad-frontend
     runtime: node
-    region: oregon
-    plan: free
+    region: frankfurt
+    plan: Starter
     buildCommand: "npm install && npm run build"
     startCommand: "npm run preview"
     envVars:
